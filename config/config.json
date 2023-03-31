@@ -1,0 +1,15 @@
+{
+    "mysql": {
+        "username":	"48huj7zyv0trdsnx0suw",
+        "password": "pscale_pw_em0Z71LIp8eXLWlxi0ANbHH0MnjDxLWhItXt8iSgZQ2",
+        "host": "aws.connect.psdb.cloud",
+        "dbname": "tft"
+    },
+    "riot": {
+        "key": "RGAPI-b938870f-f990-48c4-985c-7959b13448f6",
+        "rate_limit": 100,
+        "rate_period": 120000,
+        "rate_efficiency": 0.95,
+        "matches_after": 1673424000
+    }
+}
