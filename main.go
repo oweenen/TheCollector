@@ -1,6 +1,7 @@
 package main
 
 import (
+	"TheCollectorDG/api"
 	"TheCollectorDG/collection/matchCollection"
 	"TheCollectorDG/collection/summonerCollection"
 	"TheCollectorDG/config"
@@ -28,5 +29,8 @@ func main() {
 
 	go summonerCollection.SummonerCollectionLoop(prioSummonerCQ, summonerCQ, requestInterval)
 	time.Sleep(requestInterval / 2)
-	matchCollection.MatchCollectionLoop(prioMatchCQ, matchCq, requestInterval)
+	go matchCollection.MatchCollectionLoop(prioMatchCQ, matchCq, requestInterval)
+
+	api.Setup(prioSummonerCQ, prioMatchCQ)
+	api.Start()
 }
