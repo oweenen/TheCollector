@@ -89,7 +89,6 @@ func NewMatchFromRiotRes(matchRes *RiotMatchRes) *Match {
 				Species:   comp.Companion.Species,
 			},
 			Augments: comp.Augments,
-			Traits:   make([]Trait, len(comp.Traits)),
 			Units:    make([]Unit, len(comp.Units)),
 		}
 
