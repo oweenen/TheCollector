@@ -1,0 +1,15 @@
+{
+    "mysql": {
+        "username":	"",
+        "password": "",
+        "host": "",
+        "dbname": "tft"
+    },
+    "riot": {
+        "key": "",
+        "rate_limit": 100,
+        "rate_period": 120000,
+        "rate_efficiency": 0.95,
+        "matches_after": 1673424000
+    }
+}
