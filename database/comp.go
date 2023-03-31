@@ -4,47 +4,8 @@ import (
 	"TheCollectorDG/types"
 	"database/sql"
 	"encoding/json"
+	"log"
 )
-
-func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
-	companionJson, _ := json.Marshal(comp.Companion)
-	augmentJson, _ := json.Marshal(comp.Augments)
-	traitJson, _ := json.Marshal(comp.Traits)
-	unitJson, _ := json.Marshal(comp.Units)
-	_, err := tx.Exec(`
-		INSERT IGNORE INTO Comp (
-			match_id,
-			summoner_puuid,
-			placement,
-			last_round,
-			level,
-			remaining_gold,
-			players_eliminated,
-			player_damage_dealt,
-			time_eliminated,
-			companion,
-			augments,
-			traits,
-			units
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		`,
-		matchId,
-		comp.Summoner.Puuid,
-		comp.Placement,
-		comp.LastRound,
-		comp.Level,
-		comp.RemainingGold,
-		comp.PlayersEliminated,
-		comp.PlayerDamageDealt,
-		comp.TimeEliminated,
-		companionJson,
-		augmentJson,
-		traitJson,
-		unitJson,
-	)
-	return err
-}
 
 func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 	rows, err := db.Query(`
@@ -88,7 +49,7 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 		comp.Match = new(types.Match)
 		var companionJson, augmentJson, traitJson, unitJson []byte
 
-		var err = rows.Scan(
+		err = rows.Scan(
 			&comp.Match.Id,
 			&comp.Match.Date,
 			&comp.Match.GameLength,
@@ -121,5 +82,87 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 		comps = append(comps, comp)
 	}
 
+	for _, comp := range comps {
+		participants, err := getParticipants(comp.Match.Id)
+		log.Printf("%+v\n", participants)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		comp.Match.Participants = participants
+	}
+
 	return comps, nil
+}
+
+func getParticipants(matchId string) ([]types.Summoner, error) {
+	rows, err := db.Query(`
+		SELECT
+			Summoner.region,
+			Summoner.display_name
+		FROM Summoner JOIN Comp
+		ON Summoner.puuid = Comp.summoner_puuid
+		WHERE Comp.match_id = ?
+		`,
+		matchId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var participants []types.Summoner
+	defer rows.Close()
+	for rows.Next() {
+		var participant types.Summoner
+		err = rows.Scan(
+			&participant.Region,
+			&participant.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		participants = append(participants, participant)
+	}
+
+	return participants, nil
+}
+
+func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
+	companionJson, _ := json.Marshal(comp.Companion)
+	augmentJson, _ := json.Marshal(comp.Augments)
+	traitJson, _ := json.Marshal(comp.Traits)
+	unitJson, _ := json.Marshal(comp.Units)
+	_, err := tx.Exec(`
+		INSERT IGNORE INTO Comp (
+			match_id,
+			summoner_puuid,
+			placement,
+			last_round,
+			level,
+			remaining_gold,
+			players_eliminated,
+			player_damage_dealt,
+			time_eliminated,
+			companion,
+			augments,
+			traits,
+			units
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`,
+		matchId,
+		comp.Summoner.Puuid,
+		comp.Placement,
+		comp.LastRound,
+		comp.Level,
+		comp.RemainingGold,
+		comp.PlayersEliminated,
+		comp.PlayerDamageDealt,
+		comp.TimeEliminated,
+		companionJson,
+		augmentJson,
+		traitJson,
+		unitJson,
+	)
+	return err
 }
