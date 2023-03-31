@@ -5,39 +5,39 @@ import (
 )
 
 type Match struct {
-	Id           string     `json:"id,omitempty"`
-	Date         int64      `json:"date,omitempty"`
-	GameLength   float64    `json:"game_length,omitempty"`
-	GameVersion  string     `json:"game_version,omitempty"`
-	QueueId      int        `json:"queue_id,omitempty"`
-	GameType     string     `json:"game_type,omitempty"`
-	SetName      string     `json:"set_name,omitempty"`
-	SetNumber    int        `json:"set_number,omitempty"`
-	Comps        []Comp     `json:"comps,omitempty"`
-	Participants []Summoner `json:"participants,omitempty"`
+	Id           string        `json:"id"`
+	Date         int64         `json:"date"`
+	GameLength   float64       `json:"game_length"`
+	GameVersion  string        `json:"game_version"`
+	QueueId      int           `json:"queue_id"`
+	GameType     string        `json:"game_type"`
+	SetName      string        `json:"set_name"`
+	SetNumber    int           `json:"set_number"`
+	Comps        []Comp        `json:"comps,omitempty"`
+	Participants []Participant `json:"participants,omitempty"`
 }
 
 type Comp struct {
 	Match             *Match    `json:"match,omitempty"`
 	Summoner          *Summoner `json:"summoner,omitempty"`
-	Placement         int       `json:"placement,omitempty"`
-	LastRound         int       `json:"last_round,omitempty"`
+	Placement         int       `json:"placement"`
+	LastRound         int       `json:"last_round"`
 	Level             int       `json:"level,omitempty"`
-	RemainingGold     int       `json:"remaining_gold,omitempty"`
-	PlayersEliminated int       `json:"players_eliminated,omitempty"`
-	PlayerDamageDealt int       `json:"player_damage_dealt,omitempty"`
-	TimeEliminated    float32   `json:"time_eliminated,omitempty"`
-	Companion         Companion `json:"companion,omitempty"`
-	Augments          []string  `json:"augments,omitempty"`
-	Traits            []Trait   `json:"traits,omitempty"`
-	Units             []Unit    `json:"units,omitempty"`
+	RemainingGold     int       `json:"remaining_gold"`
+	PlayersEliminated int       `json:"players_eliminated"`
+	PlayerDamageDealt int       `json:"player_damage_dealt"`
+	TimeEliminated    float32   `json:"time_eliminated"`
+	Companion         Companion `json:"companion"`
+	Augments          []string  `json:"augments"`
+	Traits            []Trait   `json:"traits"`
+	Units             []Unit    `json:"units"`
 }
 
 type Companion struct {
-	ContentId string `json:"content_id,omitempty"`
-	ItemId    int    `json:"item_id,omitempty"`
-	SkinId    int    `json:"skin_id,omitempty"`
-	Species   string `json:"species,omitempty"`
+	ContentId string `json:"content_id"`
+	ItemId    int    `json:"item_id"`
+	SkinId    int    `json:"skin_id"`
+	Species   string `json:"species"`
 }
 
 type Trait struct {

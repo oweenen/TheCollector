@@ -4,7 +4,6 @@ import (
 	"TheCollectorDG/types"
 	"database/sql"
 	"encoding/json"
-	"log"
 )
 
 func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
@@ -84,9 +83,7 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 
 	for _, comp := range comps {
 		participants, err := getParticipants(comp.Match.Id)
-		log.Printf("%+v\n", participants)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		comp.Match.Participants = participants
@@ -95,7 +92,7 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 	return comps, nil
 }
 
-func getParticipants(matchId string) ([]types.Summoner, error) {
+func getParticipants(matchId string) ([]types.Participant, error) {
 	rows, err := db.Query(`
 		SELECT
 			Summoner.region,
@@ -110,10 +107,10 @@ func getParticipants(matchId string) ([]types.Summoner, error) {
 		return nil, err
 	}
 
-	var participants []types.Summoner
+	var participants []types.Participant
 	defer rows.Close()
 	for rows.Next() {
-		var participant types.Summoner
+		var participant types.Participant
 		err = rows.Scan(
 			&participant.Region,
 			&participant.Name,

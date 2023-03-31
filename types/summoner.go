@@ -3,13 +3,18 @@ package types
 import "strings"
 
 type Summoner struct {
-	Puuid         string `json:"puuid,omitempty"`
-	Region        string `json:"region,omitempty"`
-	SummonerId    string `json:"summoner_id,omitempty"`
-	Name          string `json:"name,omitempty"`
-	ProfileIconId int    `json:"profileIconId,omitempty"`
-	SummonerLevel int    `json:"summonerLevel,omitempty"`
-	LastUpdated   int64  `json:"lastUpdated,omitempty"`
+	Puuid         string `json:"puuid"`
+	Region        string `json:"region"`
+	SummonerId    string `json:"summoner_id"`
+	Name          string `json:"name"`
+	ProfileIconId int    `json:"profileIconId"`
+	SummonerLevel int    `json:"summonerLevel"`
+	LastUpdated   int64  `json:"lastUpdated"`
+}
+
+type Participant struct {
+	Region string `json:"region"`
+	Name   string `json:"name"`
 }
 
 func ToRawName(displayName string) string {
