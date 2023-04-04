@@ -47,7 +47,7 @@ type Unit struct {
 }
 
 func GetMatchIdRegion(matchId string) string {
-	return strings.Split(matchId, "_")[0]
+	return strings.ToLower(strings.Split(matchId, "_")[0])
 }
 
 func NewMatchFromRiotRes(matchRes *RiotMatchRes) *Match {

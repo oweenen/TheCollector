@@ -59,7 +59,6 @@ func GetStaleMatchHistory(excludePuuids []string) (*types.UpdateInfo, error) {
 		&updateInfo.Region,
 		&updateInfo.MatchesLastUpdated,
 	)
-
 	return updateInfo, err
 }
 

@@ -21,6 +21,7 @@ func NewMatchHistoryCollecter(region string, puuid string, after int64, matchCQ 
 	return MatchHistoryCollecter{
 		MatchCQ:    matchCQ,
 		SummonerCQ: summonerCQ,
+		Region:     region,
 		Puuid:      puuid,
 		After:      after,
 	}
