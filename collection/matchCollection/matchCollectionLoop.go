@@ -30,7 +30,7 @@ func MatchCollectionLoop(priorityQueue *MatchCollectionQueue, queue *MatchCollec
 func queueStaleMatchHistory(cq *MatchCollectionQueue) error {
 	updateInfo, err := database.GetStaleMatchHistory(cq.matchHistoryCollectionQueue.ListIds())
 	if err == nil && updateInfo != nil {
-		cq.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
+		cq.QueueMatchHistory(updateInfo.Region, updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	}
 	return err
 }

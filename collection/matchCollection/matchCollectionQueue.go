@@ -24,7 +24,7 @@ func (cq *MatchCollectionQueue) QueueMatchDetails(matchId string) chan error {
 	return cq.matchDetailsCollectionQueue.Queue(collecter)
 }
 
-func (cq *MatchCollectionQueue) QueueMatchHistory(puuid string, after int64) chan error {
-	collecter := NewMatchHistoryCollecter(puuid, after, cq, cq.summonerCollectionQueue)
+func (cq *MatchCollectionQueue) QueueMatchHistory(region string, puuid string, after int64) chan error {
+	collecter := NewMatchHistoryCollecter(region, puuid, after, cq, cq.summonerCollectionQueue)
 	return cq.matchHistoryCollectionQueue.Queue(collecter)
 }

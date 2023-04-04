@@ -12,11 +12,12 @@ import (
 type MatchHistoryCollecter struct {
 	MatchCQ    *MatchCollectionQueue
 	SummonerCQ *summonerCollection.SummonerCollectionQueue
+	Region     string
 	Puuid      string
 	After      int64
 }
 
-func NewMatchHistoryCollecter(puuid string, after int64, matchCQ *MatchCollectionQueue, summonerCQ *summonerCollection.SummonerCollectionQueue) MatchHistoryCollecter {
+func NewMatchHistoryCollecter(region string, puuid string, after int64, matchCQ *MatchCollectionQueue, summonerCQ *summonerCollection.SummonerCollectionQueue) MatchHistoryCollecter {
 	return MatchHistoryCollecter{
 		MatchCQ:    matchCQ,
 		SummonerCQ: summonerCQ,
@@ -33,7 +34,7 @@ func (c MatchHistoryCollecter) Collect() error {
 	fmt.Printf("Collecting match history for summoner %s\n", c.Puuid)
 
 	updatedAt := time.Now().Unix()
-	history, err := riot.GetMatchHistory(c.Puuid, c.After)
+	history, err := riot.GetMatchHistory(c.Region, c.Puuid, c.After)
 	if err != nil {
 		return err
 	}

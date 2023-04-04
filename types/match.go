@@ -5,16 +5,15 @@ import (
 )
 
 type Match struct {
-	Id           string        `json:"id"`
-	Date         int64         `json:"date"`
-	GameLength   float64       `json:"game_length"`
-	GameVersion  string        `json:"game_version"`
-	QueueId      int           `json:"queue_id"`
-	GameType     string        `json:"game_type"`
-	SetName      string        `json:"set_name"`
-	SetNumber    int           `json:"set_number"`
-	Comps        []Comp        `json:"comps,omitempty"`
-	Participants []Participant `json:"participants,omitempty"`
+	Id          string  `json:"id"`
+	Date        int64   `json:"date"`
+	GameLength  float64 `json:"game_length"`
+	GameVersion string  `json:"game_version"`
+	QueueId     int     `json:"queue_id"`
+	GameType    string  `json:"game_type"`
+	SetName     string  `json:"set_name"`
+	SetNumber   int     `json:"set_number"`
+	Comps       []Comp  `json:"comps,omitempty"`
 }
 
 type Comp struct {
@@ -27,17 +26,10 @@ type Comp struct {
 	PlayersEliminated int       `json:"players_eliminated"`
 	PlayerDamageDealt int       `json:"player_damage_dealt"`
 	TimeEliminated    float32   `json:"time_eliminated"`
-	Companion         Companion `json:"companion"`
+	Companion         int       `json:"companion"`
 	Augments          []string  `json:"augments"`
 	Traits            []Trait   `json:"traits"`
 	Units             []Unit    `json:"units"`
-}
-
-type Companion struct {
-	ContentId string `json:"content_id"`
-	ItemId    int    `json:"item_id"`
-	SkinId    int    `json:"skin_id"`
-	Species   string `json:"species"`
 }
 
 type Trait struct {
@@ -83,14 +75,9 @@ func NewMatchFromRiotRes(matchRes *RiotMatchRes) *Match {
 			PlayersEliminated: comp.PlayersEliminated,
 			PlayerDamageDealt: comp.DamageToPlayers,
 			TimeEliminated:    float32(comp.TimeEliminated),
-			Companion: Companion{
-				ContentId: comp.Companion.ContentId,
-				ItemId:    comp.Companion.ItemId,
-				SkinId:    comp.Companion.SkinId,
-				Species:   comp.Companion.Species,
-			},
-			Augments: comp.Augments,
-			Units:    make([]Unit, len(comp.Units)),
+			Companion:         comp.Companion.ItemId,
+			Augments:          comp.Augments,
+			Units:             make([]Unit, len(comp.Units)),
 		}
 
 		for _, trait := range comp.Traits {

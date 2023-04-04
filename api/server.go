@@ -56,7 +56,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 		return nil
 	}
 
-	err = <-matchCollectionQueue.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
+	err = <-matchCollectionQueue.QueueMatchHistory(updateInfo.Region, updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	if err != nil {
 		c.SendStatus(500)
 		return nil
