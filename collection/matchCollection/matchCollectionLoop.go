@@ -2,11 +2,12 @@ package matchCollection
 
 import (
 	"TheCollectorDG/database"
+	"TheCollectorDG/riot"
 	"log"
 	"time"
 )
 
-func MatchCollectionLoop(priorityQueue *MatchCollectionQueue, queue *MatchCollectionQueue, interval time.Duration) {
+func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *RegionalMatchCollectionQueue, interval time.Duration) {
 	for range time.Tick(interval) {
 		if priorityQueue.matchDetailsCollectionQueue.HasNext() {
 			go priorityQueue.matchDetailsCollectionQueue.CollectNext()
@@ -27,10 +28,10 @@ func MatchCollectionLoop(priorityQueue *MatchCollectionQueue, queue *MatchCollec
 	}
 }
 
-func queueStaleMatchHistory(cq *MatchCollectionQueue) error {
-	updateInfo, err := database.GetStaleMatchHistory(cq.matchHistoryCollectionQueue.ListIds())
+func queueStaleMatchHistory(cq *RegionalMatchCollectionQueue) error {
+	updateInfo, err := database.GetStaleMatchHistory(riot.RiotRegionClusters[cq.regionalServer], cq.matchHistoryCollectionQueue.ListIds())
 	if err == nil && updateInfo != nil {
-		cq.QueueMatchHistory(updateInfo.Region, updateInfo.Puuid, updateInfo.MatchesLastUpdated)
+		cq.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	}
 	return err
 }

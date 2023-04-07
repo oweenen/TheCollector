@@ -12,6 +12,7 @@ func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
 		SELECT
 			puuid,
 			region,
+			summoner_id,
 			matches_last_updated,
 			last_updated,
 			rank_last_updated
@@ -22,6 +23,7 @@ func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
 	err := row.Scan(
 		&updateInfo.Puuid,
 		&updateInfo.Region,
+		&updateInfo.SummonerId,
 		&updateInfo.MatchesLastUpdated,
 		&updateInfo.LastUpdated,
 		&updateInfo.RankLastUpdated,
@@ -30,7 +32,7 @@ func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
 	return updateInfo, err
 }
 
-func GetStaleMatchHistory(excludePuuids []string) (*types.UpdateInfo, error) {
+func GetStaleMatchHistory(regions []string, excludePuuids []string) (*types.UpdateInfo, error) {
 	var query string
 	if len(excludePuuids) > 0 {
 		query = fmt.Sprintf(`
@@ -38,18 +40,18 @@ func GetStaleMatchHistory(excludePuuids []string) (*types.UpdateInfo, error) {
 				puuid,
 				region,
 				matches_last_updated
-			FROM Summoner WHERE puuid NOT IN ('%s')
+			FROM Summoner WHERE puuid NOT IN ('%s') AND region IN ('%s')
 			ORDER BY matches_last_updated LIMIT 1
-		`, strings.Join(excludePuuids, "', '"))
+		`, strings.Join(excludePuuids, "', '"), strings.Join(regions, "', '"))
 	} else {
-		query = `
+		query = fmt.Sprintf(`
 			SELECT
 				puuid,
 				region,
 				matches_last_updated
-			FROM Summoner
+			FROM Summoner WHERE region IN ('%s')
 			ORDER BY matches_last_updated LIMIT 1
-		`
+		`, strings.Join(regions, "', '"))
 	}
 
 	updateInfo := new(types.UpdateInfo)
@@ -58,6 +60,41 @@ func GetStaleMatchHistory(excludePuuids []string) (*types.UpdateInfo, error) {
 		&updateInfo.Puuid,
 		&updateInfo.Region,
 		&updateInfo.MatchesLastUpdated,
+	)
+	return updateInfo, err
+}
+
+func GetStaleRank(excludePuuids []string) (*types.UpdateInfo, error) {
+	var query string
+	if len(excludePuuids) > 0 {
+		query = fmt.Sprintf(`
+			SELECT
+				puuid,
+				region,
+				summoner_id,
+				rank_last_updated
+			FROM Summoner WHERE puuid NOT IN ('%s')
+			ORDER BY rank_last_updated LIMIT 1
+		`, strings.Join(excludePuuids, "', '"))
+	} else {
+		query = `
+			SELECT
+				puuid,
+				region,
+				summoner_id,
+				rank_last_updated
+			FROM Summoner
+			ORDER BY rank_last_updated LIMIT 1
+		`
+	}
+
+	updateInfo := new(types.UpdateInfo)
+	row := db.QueryRow(query)
+	err := row.Scan(
+		&updateInfo.Puuid,
+		&updateInfo.Region,
+		&updateInfo.SummonerId,
+		&updateInfo.RankLastUpdated,
 	)
 	return updateInfo, err
 }
@@ -78,6 +115,18 @@ func SetMatchesUpdatedAt(puuid string, updatedAt int64) error {
 	_, err := db.Exec(`
 		UPDATE Summoner
 			SET matches_last_updated = ?
+		WHERE puuid = ?
+		`,
+		updatedAt,
+		puuid,
+	)
+	return err
+}
+
+func SetRankUpdatedAt(puuid string, updatedAt int64) error {
+	_, err := db.Exec(`
+		UPDATE Summoner
+			SET rank_last_updated = ?
 		WHERE puuid = ?
 		`,
 		updatedAt,

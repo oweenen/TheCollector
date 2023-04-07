@@ -7,12 +7,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var summonerCollectionQueue *summonerCollection.SummonerCollectionQueue
-var matchCollectionQueue *matchCollection.MatchCollectionQueue
+var summonerCollectionRegionRouter map[string]*summonerCollection.RegionalSummonerCollectionQueue
+var matchCollectionRegionRouter map[string]*matchCollection.RegionalMatchCollectionQueue
 
-func Setup(summonerCQ *summonerCollection.SummonerCollectionQueue, matchCQ *matchCollection.MatchCollectionQueue) {
-	summonerCollectionQueue = summonerCQ
-	matchCollectionQueue = matchCQ
+func Setup(summonerCQR map[string]*summonerCollection.RegionalSummonerCollectionQueue,
+	matchCQR map[string]*matchCollection.RegionalMatchCollectionQueue) {
+	summonerCollectionRegionRouter = summonerCQR
+	matchCollectionRegionRouter = matchCQR
 }
 
 func Start() {

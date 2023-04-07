@@ -4,22 +4,31 @@ import (
 	"TheCollectorDG/collection"
 )
 
-type SummonerCollectionQueue struct {
-	collectionQueue collection.CollectionQueue
+type RegionalSummonerCollectionQueue struct {
+	region                  string
+	summonerCollectionQueue collection.CollectionQueue
+	rankCollectionQueue     collection.CollectionQueue
 }
 
-func NewSummonerCollectionQueue() *SummonerCollectionQueue {
-	return &SummonerCollectionQueue{
-		collectionQueue: collection.NewCollectionQueue(),
+func NewRegionalSummonerCollectionQueue(region string) *RegionalSummonerCollectionQueue {
+	return &RegionalSummonerCollectionQueue{
+		region:                  region,
+		summonerCollectionQueue: collection.NewCollectionQueue(),
+		rankCollectionQueue:     collection.NewCollectionQueue(),
 	}
 }
 
-func (cq *SummonerCollectionQueue) QueueSummonerByName(region string, name string) chan error {
-	collecter := NewSummonerByNameCollecter(region, name)
-	return cq.collectionQueue.Queue(collecter)
+func (cq *RegionalSummonerCollectionQueue) QueueSummonerByName(name string) chan error {
+	collecter := NewSummonerByNameCollecter(cq.region, name)
+	return cq.summonerCollectionQueue.Queue(collecter)
 }
 
-func (cq *SummonerCollectionQueue) QueueSummonerByPuuid(region string, puuid string) chan error {
-	collecter := NewSummonerByPuuidCollecter(region, puuid)
-	return cq.collectionQueue.Queue(collecter)
+func (cq *RegionalSummonerCollectionQueue) QueueSummonerByPuuid(puuid string) chan error {
+	collecter := NewSummonerByPuuidCollecter(cq.region, puuid)
+	return cq.summonerCollectionQueue.Queue(collecter)
+}
+
+func (cq *RegionalSummonerCollectionQueue) QueueRank(puuid string, summonerId string) chan error {
+	collecter := NewRankCollecter(cq.region, puuid, summonerId)
+	return cq.rankCollectionQueue.Queue(collecter)
 }

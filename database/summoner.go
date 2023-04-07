@@ -42,6 +42,7 @@ func GetSummoner(region string, name string) (*types.Summoner, error) {
 		SELECT
 			puuid,
 			region,
+			summoner_id,
 			display_name,
 			profile_icon_id,
 			summoner_level,
@@ -54,6 +55,7 @@ func GetSummoner(region string, name string) (*types.Summoner, error) {
 	err := row.Scan(
 		&summoner.Puuid,
 		&summoner.Region,
+		&summoner.SummonerId,
 		&summoner.Name,
 		&summoner.ProfileIconId,
 		&summoner.SummonerLevel,

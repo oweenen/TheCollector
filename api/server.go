@@ -2,6 +2,8 @@ package api
 
 import (
 	"TheCollectorDG/database"
+	"TheCollectorDG/riot"
+	"log"
 	"net/url"
 	"strings"
 	"time"
@@ -11,7 +13,7 @@ import (
 
 // summoner/:region/:name
 func GetSummoner(c *fiber.Ctx) error {
-	region := strings.ToUpper(c.Params("region"))
+	region := strings.ToLower(c.Params("region"))
 	name, err := url.QueryUnescape(c.Params("name"))
 	if err != nil {
 		c.Status(400)
@@ -20,21 +22,27 @@ func GetSummoner(c *fiber.Ctx) error {
 
 	// summoner in db
 	summoner, err := database.GetSummoner(region, name)
-	if err == nil {
-		c.Status(200).JSON(*summoner)
-		return nil
+	if err != nil {
+		summonerCQ, ok := summonerCollectionRegionRouter[region]
+		if !ok {
+			c.SendStatus(400)
+			return nil
+		}
+		err = <-summonerCQ.QueueSummonerByName(name)
+		if err != nil {
+			c.SendStatus(404)
+			return nil
+		}
+		summoner, err = database.GetSummoner(region, name)
+		if err != nil {
+			c.SendStatus(500)
+			return nil
+		}
 	}
 
-	// summoner not in db
-	err = <-summonerCollectionQueue.QueueSummonerByName(region, name)
-	if err != nil {
-		c.SendStatus(404)
-		return nil
-	}
-	summoner, err = database.GetSummoner(region, name)
-	if err != nil {
-		c.SendStatus(500)
-		return nil
+	rank, err := database.GetRank(summoner.Puuid)
+	if err == nil {
+		summoner.Rank = rank
 	}
 
 	c.Status(200).JSON(*summoner)
@@ -50,13 +58,31 @@ func UpdateProfile(c *fiber.Ctx) error {
 		return nil
 	}
 
-	err = <-summonerCollectionQueue.QueueSummonerByPuuid(updateInfo.Region, updateInfo.Puuid)
+	summonerCQ, ok := summonerCollectionRegionRouter[updateInfo.Region]
+	if !ok {
+		c.SendStatus(400)
+		return nil
+	}
+	matchCQ, ok := matchCollectionRegionRouter[riot.RiotRegionRoutes[updateInfo.Region]]
+	if !ok {
+		c.SendStatus(500)
+		return nil
+	}
+
+	err = <-summonerCQ.QueueSummonerByPuuid(updateInfo.Puuid)
 	if err != nil {
 		c.SendStatus(500)
 		return nil
 	}
 
-	err = <-matchCollectionQueue.QueueMatchHistory(updateInfo.Region, updateInfo.Puuid, updateInfo.MatchesLastUpdated)
+	err = <-summonerCQ.QueueRank(updateInfo.Puuid, updateInfo.SummonerId)
+	if err != nil {
+		log.Panicln(err)
+		c.SendStatus(500)
+		return nil
+	}
+
+	err = <-matchCQ.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	if err != nil {
 		c.SendStatus(500)
 		return nil

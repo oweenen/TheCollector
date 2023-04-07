@@ -10,13 +10,15 @@ import (
 )
 
 type MatchDetailsCollecter struct {
-	SummonerCollectionQueue *summonerCollection.SummonerCollectionQueue
+	SummonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue
+	RegionalServer          string
 	MatchId                 string
 }
 
-func NewMatchDetailsCollecter(matchId string, summonerCollectionQueue *summonerCollection.SummonerCollectionQueue) MatchDetailsCollecter {
+func NewMatchDetailsCollecter(regionalServer string, matchId string, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) MatchDetailsCollecter {
 	return MatchDetailsCollecter{
 		SummonerCollectionQueue: summonerCollectionQueue,
+		RegionalServer:          regionalServer,
 		MatchId:                 matchId,
 	}
 }
@@ -26,9 +28,7 @@ func (c MatchDetailsCollecter) Id() string {
 }
 
 func (c MatchDetailsCollecter) Collect() error {
-	fmt.Printf("Collecting match %s\n", c.MatchId)
-
-	match, err := riot.GetMatchDetails(c.MatchId)
+	match, err := riot.GetMatchDetails(c.RegionalServer, c.MatchId)
 	if err != nil {
 		fmt.Printf("ERROR failed to get match %s from riot: %s\n", c.MatchId, err)
 		return err
@@ -41,13 +41,13 @@ func (c MatchDetailsCollecter) Collect() error {
 
 	err = database.StoreMatch(match)
 
+	fmt.Printf("Collected match %s\n", c.MatchId)
 	return err
 }
 
-func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summonerCollection.SummonerCollectionQueue) error {
+func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error)
-	region := types.GetMatchIdRegion(match.Id)
 
 	for _, comp := range match.Comps {
 		puuid := comp.Summoner.Puuid
@@ -55,9 +55,9 @@ func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summon
 		go func(puuid string) {
 			defer wg.Done()
 			if !database.SummonerIsStored(puuid) {
-				err := <-summonerCollectionQueue.QueueSummonerByPuuid(region, puuid)
+				err := <-summonerCollectionQueue.QueueSummonerByPuuid(puuid)
 				if err != nil {
-					errChan <- fmt.Errorf("failed to collect summoner %s %s", region, puuid)
+					errChan <- fmt.Errorf("failed to collect summoner %s", puuid)
 				}
 			}
 		}(puuid)

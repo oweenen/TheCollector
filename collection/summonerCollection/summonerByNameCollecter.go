@@ -25,7 +25,6 @@ func (c SummonerByNameCollecter) Id() string {
 }
 
 func (c SummonerByNameCollecter) Collect() error {
-	fmt.Printf("Collecting summoner %v\n", c.RawName)
 	// get summoner from riot
 	updatedAt := time.Now().Unix()
 	summoner, err := riot.GetSummonerByName(c.Region, c.RawName)
@@ -42,5 +41,6 @@ func (c SummonerByNameCollecter) Collect() error {
 		return err
 	}
 
+	fmt.Printf("Collected summoner %v\n", c.RawName)
 	return nil
 }

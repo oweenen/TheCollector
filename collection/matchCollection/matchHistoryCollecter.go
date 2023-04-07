@@ -1,7 +1,6 @@
 package matchCollection
 
 import (
-	"TheCollectorDG/collection/summonerCollection"
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
 	"fmt"
@@ -10,20 +9,18 @@ import (
 )
 
 type MatchHistoryCollecter struct {
-	MatchCQ    *MatchCollectionQueue
-	SummonerCQ *summonerCollection.SummonerCollectionQueue
-	Region     string
-	Puuid      string
-	After      int64
+	MatchCQ        *RegionalMatchCollectionQueue
+	RegionalServer string
+	Puuid          string
+	After          int64
 }
 
-func NewMatchHistoryCollecter(region string, puuid string, after int64, matchCQ *MatchCollectionQueue, summonerCQ *summonerCollection.SummonerCollectionQueue) MatchHistoryCollecter {
+func NewMatchHistoryCollecter(regionalServer string, puuid string, after int64, matchCQ *RegionalMatchCollectionQueue) MatchHistoryCollecter {
 	return MatchHistoryCollecter{
-		MatchCQ:    matchCQ,
-		SummonerCQ: summonerCQ,
-		Region:     region,
-		Puuid:      puuid,
-		After:      after,
+		MatchCQ:        matchCQ,
+		RegionalServer: regionalServer,
+		Puuid:          puuid,
+		After:          after,
 	}
 }
 
@@ -32,21 +29,20 @@ func (c MatchHistoryCollecter) Id() string {
 }
 
 func (c MatchHistoryCollecter) Collect() error {
-	fmt.Printf("Collecting match history for summoner %s\n", c.Puuid)
-
 	updatedAt := time.Now().Unix()
-	history, err := riot.GetMatchHistory(c.Region, c.Puuid, c.After)
+	history, err := riot.GetMatchHistory(c.RegionalServer, c.Puuid, c.After)
 	if err != nil {
 		return err
 	}
 
-	collectMatches(history, c.MatchCQ, c.SummonerCQ)
+	collectMatches(history, c.MatchCQ)
 
 	err = database.SetMatchesUpdatedAt(c.Puuid, updatedAt)
+	fmt.Printf("Collected match history for summoner %s\n", c.Puuid)
 	return err
 }
 
-func collectMatches(matchIds []string, matchCQ *MatchCollectionQueue, summonerCQ *summonerCollection.SummonerCollectionQueue) error {
+func collectMatches(matchIds []string, matchCQ *RegionalMatchCollectionQueue) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error)
 	for _, matchId := range matchIds {

@@ -23,8 +23,6 @@ func (c SummonerByPuuidCollecter) Id() string {
 }
 
 func (c SummonerByPuuidCollecter) Collect() error {
-	fmt.Printf("Collecting summoner %v\n", c.Puuid)
-
 	summoner, err := riot.GetSummonerByPuuid(c.Region, c.Puuid)
 	if err != nil {
 		fmt.Printf("Error getting summoner %s from riot: %s\n", c.Puuid, err)
@@ -37,5 +35,6 @@ func (c SummonerByPuuidCollecter) Collect() error {
 		return err
 	}
 
+	fmt.Printf("Collected summoner %v\n", c.Puuid)
 	return nil
 }
