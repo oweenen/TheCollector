@@ -3,6 +3,7 @@ package api
 import (
 	"TheCollectorDG/collection/matchCollection"
 	"TheCollectorDG/collection/summonerCollection"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,5 +24,9 @@ func Start() {
 	app.Get("comps/:puuid", GetCompHistory)
 	app.Get("update/profile/:puuid", UpdateProfile)
 
-	app.Listen(":9090")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9090"
+	}
+	app.Listen("0.0.0.0:" + port)
 }
