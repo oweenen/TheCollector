@@ -80,7 +80,47 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 		comps = append(comps, comp)
 	}
 
+	for _, comp := range comps {
+		participants, err := getParticipants(comp.Match.Id)
+		if err != nil {
+			return nil, err
+		}
+		comp.Match.Participants = participants
+	}
+
 	return comps, nil
+}
+
+func getParticipants(matchId string) ([]types.Participant, error) {
+	rows, err := db.Query(`
+		SELECT
+			Summoner.region,
+			Summoner.display_name
+		FROM Summoner JOIN Comp
+		ON Summoner.puuid = Comp.summoner_puuid
+		WHERE Comp.match_id = ?
+		`,
+		matchId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var participants []types.Participant
+	defer rows.Close()
+	for rows.Next() {
+		var participant types.Participant
+		err = rows.Scan(
+			&participant.Region,
+			&participant.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		participants = append(participants, participant)
+	}
+
+	return participants, nil
 }
 
 func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {

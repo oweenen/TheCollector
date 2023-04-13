@@ -5,15 +5,16 @@ import (
 )
 
 type Match struct {
-	Id          string  `json:"id"`
-	Date        int64   `json:"date"`
-	GameLength  float64 `json:"game_length"`
-	GameVersion string  `json:"game_version"`
-	QueueId     int     `json:"queue_id"`
-	GameType    string  `json:"game_type"`
-	SetName     string  `json:"set_name"`
-	SetNumber   int     `json:"set_number"`
-	Comps       []Comp  `json:"comps,omitempty"`
+	Id           string        `json:"id"`
+	Date         int64         `json:"date"`
+	GameLength   float64       `json:"game_length"`
+	GameVersion  string        `json:"game_version"`
+	QueueId      int           `json:"queue_id"`
+	GameType     string        `json:"game_type"`
+	SetName      string        `json:"set_name"`
+	SetNumber    int           `json:"set_number"`
+	Comps        []Comp        `json:"comps,omitempty"`
+	Participants []Participant `json:"participants,omitempty"`
 }
 
 type Comp struct {

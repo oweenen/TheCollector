@@ -13,6 +13,11 @@ type Summoner struct {
 	Rank          *Rank  `json:"rank"`
 }
 
+type Participant struct {
+	Region string `json:"region"`
+	Name   string `json:"name"`
+}
+
 func ToRawName(displayName string) string {
 	return strings.ToLower(strings.ReplaceAll(displayName, " ", ""))
 }
