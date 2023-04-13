@@ -1,23 +1,20 @@
 package database
 
 import (
-	"TheCollectorDG/config"
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
 
-func dataSourceName(config config.MySqlConfig) string {
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true", config.Username, config.Password, config.Host, config.DbName)
-}
-
-func Setup(config config.MySqlConfig) {
+func SetupConnection() {
 	var err error
-	db, err = sql.Open("mysql", dataSourceName(config))
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_URL"), os.Getenv("DB_NAME"))
+	db, err = sql.Open("mysql", dataSourceName)
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}

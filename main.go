@@ -4,25 +4,40 @@ import (
 	"TheCollectorDG/api"
 	"TheCollectorDG/collection/matchCollection"
 	"TheCollectorDG/collection/summonerCollection"
-	"TheCollectorDG/config"
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
 	"log"
+	"os"
+	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	config, err := config.LoadConfig()
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal("Error loading .env file")
 	}
 
-	riot.Setup(config.Riot.Key, config.Riot.MatchesAfter)
-	database.Setup(config.MySqlConfig)
+	database.SetupConnection()
+	riot.Setup()
 
-	requestInterval := float32(config.Riot.RatePeriod) / float32(config.Riot.RateLimit) / config.Riot.RateEfficiency
+	rateLimit, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_LIMIT"), 32)
+	if err != nil {
+		rateLimit = 100
+	}
+	ratePeriod, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_PERIOD"), 32)
+	if err != nil {
+		ratePeriod = 120000
+	}
+	rateEfficiency, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_EFFICIENCY"), 32)
+	if err != nil {
+		rateEfficiency = 0.95
+	}
+	requestInterval := ratePeriod / rateLimit / rateEfficiency
 	requestIntervalDuration := time.Duration(requestInterval) * time.Millisecond
-	queueSpacing := time.Duration(requestInterval/float32(len(riot.RiotRegionRoutes)+len(riot.RiotRegionClusters))) * time.Millisecond
+	queueSpacing := time.Duration(requestInterval/float64(len(riot.RiotRegionRoutes)+len(riot.RiotRegionClusters))) * time.Millisecond
 
 	summonerCollectionRouter := make(map[string]*summonerCollection.RegionalSummonerCollectionQueue)
 	prioSummonerCollectionRouter := make(map[string]*summonerCollection.RegionalSummonerCollectionQueue)
