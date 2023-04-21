@@ -19,7 +19,7 @@ func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *Reg
 			go queue.matchHistoryCollectionQueue.CollectNext()
 		}
 
-		if !queue.matchDetailsCollectionQueue.HasNext() && !queue.matchHistoryCollectionQueue.HasActiveJob() {
+		if queue.matchHistoryCollectionQueue.NumActiveJobs() < 5 {
 			err := queueStaleMatchHistory(queue)
 			if err != nil {
 				log.Println(err)

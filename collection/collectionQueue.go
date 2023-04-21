@@ -69,10 +69,10 @@ func (cq *CollectionQueue) HasNext() bool {
 	return len(cq.collectionBucketQueue) > 0
 }
 
-func (cq *CollectionQueue) HasActiveJob() bool {
+func (cq *CollectionQueue) NumActiveJobs() int {
 	cq.mu.Lock()
 	defer cq.mu.Unlock()
-	return len(cq.collectionBuckets) > 0
+	return len(cq.collectionBuckets)
 }
 
 func (cq *CollectionQueue) ListIds() []string {
