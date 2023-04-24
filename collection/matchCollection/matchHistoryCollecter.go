@@ -42,25 +42,18 @@ func (c MatchHistoryCollecter) Collect() error {
 	return err
 }
 
-func collectMatches(matchIds []string, matchCQ *RegionalMatchCollectionQueue) error {
+func collectMatches(matchIds []string, matchCQ *RegionalMatchCollectionQueue) {
 	var wg sync.WaitGroup
-	errChan := make(chan error)
 	for _, matchId := range matchIds {
 		wg.Add(1)
 		go func(matchId string) {
 			defer wg.Done()
 			if !database.MatchIsStored(matchId) {
 				if err := <-matchCQ.QueueMatchDetails(matchId); err != nil {
-					errChan <- fmt.Errorf("error collecting match %s: %s", matchId, err)
+					fmt.Printf("error collecting match %s: %s\n", matchId, err)
 				}
 			}
 		}(matchId)
 	}
 	wg.Wait()
-	if len(errChan) > 0 {
-		err := <-errChan
-		close(errChan)
-		return err
-	}
-	return nil
 }

@@ -34,15 +34,22 @@ func (c MatchDetailsCollecter) Collect() error {
 		return err
 	}
 
+	if match.QueueId == 1110 || match.QueueId == 1111 {
+		return nil
+	}
+
 	err = QueueSummonersNotStored(match, c.SummonerCollectionQueue)
 	if err != nil {
 		return err
 	}
 
 	err = database.StoreMatch(match)
+	if err != nil {
+		return err
+	}
 
 	fmt.Printf("Collected match %s\n", c.MatchId)
-	return err
+	return nil
 }
 
 func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
