@@ -13,7 +13,7 @@ var db *sql.DB
 
 func SetupConnection() {
 	var err error
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_URL"), os.Getenv("DB_NAME"))
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_URL"), os.Getenv("DB_NAME"))
 	db, err = sql.Open("mysql", dataSourceName)
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
@@ -22,5 +22,5 @@ func SetupConnection() {
 	if err := db.Ping(); err != nil {
 		log.Fatalf("failed to ping: %v", err)
 	}
-	log.Println("Successfully connected to PlanetScale!")
+	log.Println("Successfully connected to database!")
 }
