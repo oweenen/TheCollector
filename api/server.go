@@ -40,10 +40,10 @@ func GetSummoner(c *fiber.Ctx) error {
 		}
 	}
 
-	rank, err := database.GetRank(summoner.Puuid)
-	if err == nil {
-		summoner.Rank = rank
-	}
+	//rank, err := database.GetRank(summoner.Puuid)
+	//if err == nil {
+	//	summoner.Rank = rank
+	//}
 
 	c.Status(200).JSON(*summoner)
 	return nil
