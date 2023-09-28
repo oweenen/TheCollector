@@ -14,7 +14,7 @@ func StoreSummoner(summoner *types.Summoner) error {
 			raw_name,
 			display_name,
 			profile_icon_id,
-			summoner_level,
+			summoner_level
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE
