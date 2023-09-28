@@ -15,9 +15,8 @@ func StoreSummoner(summoner *types.Summoner) error {
 			display_name,
 			profile_icon_id,
 			summoner_level,
-			matches_last_updated
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE
 			region = VALUES(region),
 			summoner_id = VALUES(summoner_id),
