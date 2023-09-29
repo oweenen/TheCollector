@@ -46,11 +46,10 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
 	        c.units
 	    FROM Comp c
 	    WHERE c.summoner_puuid = ?
-	    ORDER BY c.date DESC
-	    LIMIT ?
 	) AS SelectedComps
 	ON TFT_Match.id = SelectedComps.match_id
-	ORDER BY TFT_Match.date DESC;
+	ORDER BY TFT_Match.date DESC
+	LIMIT ?
 		`,
 		puuid,
 		count,
