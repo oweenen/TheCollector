@@ -17,21 +17,20 @@ func GetRecentComps(puuid string, count int) ([]*types.Comp, error) {
     	TFT_Match.game_type,
     	TFT_Match.set_name,
     	TFT_Match.set_number,
-    	Comp.placement,
-    	Comp.last_round,
-    	Comp.level,
-    	Comp.remaining_gold,
-    	Comp.players_eliminated,
-    	Comp.player_damage_dealt,
-    	Comp.time_eliminated,
-    	Comp.companion,
-    	Comp.augments,
-    	Comp.traits,
-    	Comp.units
+    	SelectedComps.placement,
+    	SelectedComps.last_round,
+    	SelectedComps.level,
+    	SelectedComps.remaining_gold,
+    	SelectedComps.players_eliminated,
+    	SelectedComps.player_damage_dealt,
+    	SelectedComps.time_eliminated,
+    	SelectedComps.companion,
+    	SelectedComps.augments,
+    	SelectedComps.traits,
+    	SelectedComps.units
 	FROM TFT_Match
 	JOIN (
 	    SELECT
-	        c.id AS comp_id,
 	        c.match_id,
 	        c.placement,
 	        c.last_round,
