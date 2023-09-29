@@ -11,7 +11,8 @@ import (
 var db *sql.DB
 
 func SetupConnection() {
-	db, err := sql.Open("mysql", os.Getenv("DSN"))
+	var err error
+	db, err = sql.Open("mysql", os.Getenv("DSN"))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
