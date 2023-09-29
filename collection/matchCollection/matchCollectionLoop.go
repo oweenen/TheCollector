@@ -2,7 +2,6 @@ package matchCollection
 
 import (
 	"TheCollectorDG/database"
-	"TheCollectorDG/riot"
 	"log"
 	"time"
 )
@@ -29,7 +28,7 @@ func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *Reg
 }
 
 func queueStaleMatchHistory(cq *RegionalMatchCollectionQueue) error {
-	updateInfo, err := database.GetStaleMatchHistory(riot.RiotRegionClusters[cq.regionalServer])
+	updateInfo, err := database.GetStaleMatchHistory(cq.regionalServer)
 	if err == nil && updateInfo != nil {
 		cq.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	}

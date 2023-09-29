@@ -1,6 +1,7 @@
 package database
 
 import (
+	"TheCollectorDG/riot"
 	"TheCollectorDG/types"
 	"strings"
 )
@@ -10,15 +11,17 @@ func StoreSummoner(summoner *types.Summoner) error {
 		INSERT INTO Summoner (
 			puuid,
 			region,
+			region_cluster,
 			summoner_id,
 			raw_name,
 			display_name,
 			profile_icon_id,
 			summoner_level
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE
 			region = VALUES(region),
+			region_cluster = VALUES(region_cluster),
 			summoner_id = VALUES(summoner_id),
 			raw_name = VALUES(raw_name),
 			display_name = VALUES(display_name),
@@ -26,7 +29,8 @@ func StoreSummoner(summoner *types.Summoner) error {
 			summoner_level = VALUES(summoner_level)
 		`,
 		summoner.Puuid,
-		strings.ToLower(summoner.Region),
+		summoner.Region,
+		riot.RiotRegionRoutes[summoner.Region],
 		summoner.SummonerId,
 		types.ToRawName(summoner.Name),
 		summoner.Name,

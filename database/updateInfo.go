@@ -32,15 +32,15 @@ func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
 	return updateInfo, err
 }
 
-func GetStaleMatchHistory(regions []string) (*types.UpdateInfo, error) {
+func GetStaleMatchHistory(regionCluster string) (*types.UpdateInfo, error) {
 	query := fmt.Sprintf(`
 		SELECT
 			puuid,
 			region,
 			matches_last_updated
-		FROM Summoner WHERE region IN ('%s')
+		FROM Summoner WHERE region_cluster = '%s'
 		ORDER BY matches_last_updated LIMIT 1
-	`, strings.Join(regions, "', '"))
+	`, regionCluster)
 
 	updateInfo := new(types.UpdateInfo)
 	row := db.QueryRow(query)

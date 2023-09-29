@@ -25,7 +25,7 @@ func ToRawName(displayName string) string {
 func NewSummonerFromRiotRes(region string, summonerRes *RiotSummonerRes) *Summoner {
 	return &Summoner{
 		Puuid:         summonerRes.Puuid,
-		Region:        region,
+		Region:        strings.ToLower(region),
 		SummonerId:    summonerRes.Id,
 		Name:          summonerRes.Name,
 		ProfileIconId: summonerRes.ProfileIconId,
