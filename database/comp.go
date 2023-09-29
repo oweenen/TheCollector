@@ -155,10 +155,10 @@ func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
 		comp.PlayersEliminated,
 		comp.PlayerDamageDealt,
 		comp.TimeEliminated,
-		companionJson,
-		augmentJson,
-		traitJson,
-		unitJson,
+		string(companionJson),
+		string(augmentJson),
+		string(traitJson),
+		string(unitJson),
 	)
 	return err
 }
