@@ -19,7 +19,7 @@ func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *Reg
 			go queue.matchHistoryCollectionQueue.CollectNext()
 		}
 
-		if queue.matchHistoryCollectionQueue.NumActiveJobs() < 5 {
+		if queue.matchHistoryCollectionQueue.NumActiveJobs() == 0 {
 			err := queueStaleMatchHistory(queue)
 			if err != nil {
 				log.Println(err)
@@ -29,7 +29,7 @@ func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *Reg
 }
 
 func queueStaleMatchHistory(cq *RegionalMatchCollectionQueue) error {
-	updateInfo, err := database.GetStaleMatchHistory(riot.RiotRegionClusters[cq.regionalServer], cq.matchHistoryCollectionQueue.ListIds())
+	updateInfo, err := database.GetStaleMatchHistory(riot.RiotRegionClusters[cq.regionalServer])
 	if err == nil && updateInfo != nil {
 		cq.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	}

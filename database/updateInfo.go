@@ -32,27 +32,15 @@ func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
 	return updateInfo, err
 }
 
-func GetStaleMatchHistory(regions []string, excludePuuids []string) (*types.UpdateInfo, error) {
-	var query string
-	if len(excludePuuids) > 0 {
-		query = fmt.Sprintf(`
-			SELECT
-				puuid,
-				region,
-				matches_last_updated
-			FROM Summoner WHERE puuid NOT IN ('%s') AND region IN ('%s')
-			ORDER BY matches_last_updated LIMIT 1
-		`, strings.Join(excludePuuids, "', '"), strings.Join(regions, "', '"))
-	} else {
-		query = fmt.Sprintf(`
-			SELECT
-				puuid,
-				region,
-				matches_last_updated
-			FROM Summoner WHERE region IN ('%s')
-			ORDER BY matches_last_updated LIMIT 1
-		`, strings.Join(regions, "', '"))
-	}
+func GetStaleMatchHistory(regions []string) (*types.UpdateInfo, error) {
+	query := fmt.Sprintf(`
+		SELECT
+			puuid,
+			region,
+			matches_last_updated
+		FROM Summoner WHERE region IN ('%s')
+		ORDER BY matches_last_updated LIMIT 1
+	`, strings.Join(regions, "', '"))
 
 	updateInfo := new(types.UpdateInfo)
 	row := db.QueryRow(query)
