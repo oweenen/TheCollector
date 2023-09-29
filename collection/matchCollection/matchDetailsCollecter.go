@@ -54,7 +54,7 @@ func (c MatchDetailsCollecter) Collect() error {
 
 func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
 	var wg sync.WaitGroup
-	errChan := make(chan error)
+	errChan := make(chan error, len(match.Comps))
 
 	for _, comp := range match.Comps {
 		puuid := comp.Summoner.Puuid
