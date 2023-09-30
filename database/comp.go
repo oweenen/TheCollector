@@ -2,6 +2,7 @@ package database
 
 import (
 	"TheCollectorDG/types"
+	"crypto/md5"
 	"database/sql"
 	"encoding/json"
 )
@@ -140,12 +141,17 @@ func getParticipants(matchId string) ([]types.Participant, error) {
 }
 
 func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
+	hasher := md5.New()
+	hasher.Write([]byte(comp.Summoner.Puuid + matchId))
+	hashBytes := hasher.Sum(nil)
+
 	companionJson, _ := json.Marshal(comp.Companion)
 	augmentJson, _ := json.Marshal(comp.Augments)
 	traitJson, _ := json.Marshal(comp.Traits)
 	unitJson, _ := json.Marshal(comp.Units)
 	_, err := tx.Exec(`
 		INSERT IGNORE INTO Comp (
+			hash_bin,
 			match_id,
 			summoner_puuid,
 			placement,
@@ -160,8 +166,9 @@ func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
 			traits,
 			units
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
+		hashBytes,
 		matchId,
 		comp.Summoner.Puuid,
 		comp.Placement,
