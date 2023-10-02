@@ -3,10 +3,17 @@ package matchCollection
 import (
 	"TheCollectorDG/database"
 	"log"
+	"os"
+	"strconv"
 	"time"
 )
 
 func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *RegionalMatchCollectionQueue, interval time.Duration) {
+	doPassiveCollection, err := strconv.ParseBool(os.Getenv("DO_PASSIVE_COLLECTION"))
+	if err != nil {
+		doPassiveCollection = false
+	}
+
 	for range time.Tick(interval) {
 		if priorityQueue.matchDetailsCollectionQueue.HasNext() {
 			go priorityQueue.matchDetailsCollectionQueue.CollectNext()
@@ -18,7 +25,7 @@ func MatchCollectionLoop(priorityQueue *RegionalMatchCollectionQueue, queue *Reg
 			go queue.matchHistoryCollectionQueue.CollectNext()
 		}
 
-		if queue.matchHistoryCollectionQueue.NumActiveJobs() == 0 {
+		if doPassiveCollection && queue.matchHistoryCollectionQueue.NumActiveJobs() == 0 {
 			err := queueStaleMatchHistory(queue)
 			if err != nil {
 				log.Println(err)
