@@ -51,6 +51,7 @@ func GetSummoner(c *fiber.Ctx) error {
 
 // update/profile/:puuid
 func UpdateProfile(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	puuid := c.Params("puuid")
 	updateInfo, err := database.GetUpdateInfo(puuid)
 	if err != nil {
