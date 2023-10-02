@@ -94,7 +94,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 		return nil
 	}
 
-	c.SendStatus(200)
+	c.Status(200).SendString("done")
 	return nil
 }
 
