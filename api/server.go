@@ -12,7 +12,7 @@ import (
 )
 
 // summoner/:region/:name
-func GetSummoner(c *fiber.Ctx) error {
+func GetSummonerByName(c *fiber.Ctx) error {
 	region := strings.ToLower(c.Params("region"))
 	name, err := url.QueryUnescape(c.Params("name"))
 	if err != nil {
@@ -21,7 +21,7 @@ func GetSummoner(c *fiber.Ctx) error {
 	}
 
 	// summoner in db
-	summoner, err := database.GetSummoner(region, name)
+	summoner, err := database.GetSummonerByName(region, name)
 	if err != nil {
 		summonerCQ, ok := summonerCollectionRegionRouter[region]
 		if !ok {
@@ -33,11 +33,30 @@ func GetSummoner(c *fiber.Ctx) error {
 			c.SendStatus(404)
 			return nil
 		}
-		summoner, err = database.GetSummoner(region, name)
+		summoner, err = database.GetSummonerByName(region, name)
 		if err != nil {
 			c.SendStatus(500)
 			return nil
 		}
+	}
+
+	rank, err := database.GetRank(summoner.Puuid)
+	if err == nil {
+		summoner.Rank = rank
+	}
+
+	c.Status(200).JSON(*summoner)
+	return nil
+}
+
+// summoner/:puuid
+func GetSummonerByPuuid(c *fiber.Ctx) error {
+	puuid := c.Params("puuid")
+
+	summoner, err := database.GetSummonerByPuuid(puuid)
+	if err != nil {
+		c.SendStatus(404)
+		return nil
 	}
 
 	rank, err := database.GetRank(summoner.Puuid)

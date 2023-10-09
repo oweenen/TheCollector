@@ -40,7 +40,7 @@ func StoreSummoner(summoner *types.Summoner) error {
 	return err
 }
 
-func GetSummoner(region string, name string) (*types.Summoner, error) {
+func GetSummonerByName(region string, name string) (*types.Summoner, error) {
 	summoner := new(types.Summoner)
 	row := db.QueryRow(`
 		SELECT
@@ -55,6 +55,33 @@ func GetSummoner(region string, name string) (*types.Summoner, error) {
 		`,
 		types.ToRawName(name),
 		strings.ToLower(region),
+	)
+	err := row.Scan(
+		&summoner.Puuid,
+		&summoner.Region,
+		&summoner.SummonerId,
+		&summoner.Name,
+		&summoner.ProfileIconId,
+		&summoner.SummonerLevel,
+		&summoner.LastUpdated,
+	)
+	return summoner, err
+}
+
+func GetSummonerByPuuid(puuid string) (*types.Summoner, error) {
+	summoner := new(types.Summoner)
+	row := db.QueryRow(`
+		SELECT
+			puuid,
+			region,
+			summoner_id,
+			display_name,
+			profile_icon_id,
+			summoner_level,
+			last_updated
+		FROM Summoner WHERE puuid = ?
+		`,
+		puuid,
 	)
 	err := row.Scan(
 		&summoner.Puuid,

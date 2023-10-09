@@ -20,7 +20,8 @@ func Setup(summonerCQR map[string]*summonerCollection.RegionalSummonerCollection
 func Start() {
 	app := fiber.New()
 
-	app.Get("summoner/:region/:name", GetSummoner)
+	app.Get("summoner/:region/:name", GetSummonerByName)
+	app.Get("summoner/:puuid", GetSummonerByPuuid)
 	app.Get("comps/:puuid", GetCompHistory)
 	app.Get("update/profile/:puuid", UpdateProfile)
 
