@@ -5,6 +5,7 @@ import (
 	"TheCollectorDG/collection/matchCollection"
 	"TheCollectorDG/collection/summonerCollection"
 	"TheCollectorDG/database"
+	"TheCollectorDG/datastore"
 	"TheCollectorDG/riot"
 	"log"
 	"os"
@@ -17,10 +18,11 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Error loading .env file")
+		log.Println("Warning: Failed to load .env file")
 	}
 
 	database.SetupConnection()
+	datastore.SetupConnection()
 	riot.Setup()
 
 	rateLimit, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_LIMIT"), 32)

@@ -3,6 +3,7 @@ package matchCollection
 import (
 	"TheCollectorDG/collection/summonerCollection"
 	"TheCollectorDG/database"
+	"TheCollectorDG/datastore"
 	"TheCollectorDG/riot"
 	"TheCollectorDG/types"
 	"fmt"
@@ -47,6 +48,8 @@ func (c MatchDetailsCollecter) Collect() error {
 	if err != nil {
 		return err
 	}
+
+	datastore.StoreMatch(match)
 
 	fmt.Printf("Collected match %s\n", c.MatchId)
 	return nil
