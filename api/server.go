@@ -131,3 +131,17 @@ func GetCompHistory(c *fiber.Ctx) error {
 	c.Status(200).JSON(compHistory)
 	return nil
 }
+
+// matches/:puuid
+func GetMatchHistory(c *fiber.Ctx) error {
+	puuid := c.Params("puuid")
+
+	matchHistory, err := database.GetRecentMatches(puuid, 10)
+	if err != nil {
+		c.SendStatus(404)
+		return nil
+	}
+
+	c.Status(200).JSON(matchHistory)
+	return nil
+}

@@ -23,6 +23,7 @@ func Start() {
 	app.Get("summoner/:region/:name", GetSummonerByName)
 	app.Get("summoner/:puuid", GetSummonerByPuuid)
 	app.Get("comps/:puuid", GetCompHistory)
+	app.Get("matches/:puuid", GetMatchHistory)
 	app.Get("update/profile/:puuid", UpdateProfile)
 
 	port := os.Getenv("PORT")
