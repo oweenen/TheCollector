@@ -21,11 +21,13 @@ func storeComp(matchId string, comp *types.Comp) {
 	key := fmt.Sprintf("%s/%s.json", matchId, comp.Summoner.Puuid)
 
 	_, err = client.PutObject(&s3.PutObjectInput{
-		Bucket:   aws.String(bucket),
-		Key:      aws.String(key),
-		Body:     bytes.NewReader(jsonData),
-		ACL:      aws.String("public-read"),
-		Metadata: map[string]*string{},
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   bytes.NewReader(jsonData),
+		ACL:    aws.String("public-read"),
+		Metadata: map[string]*string{
+			"Content-type": aws.String("application/json"),
+		},
 	})
 
 	if err != nil {
