@@ -44,12 +44,12 @@ func (c MatchDetailsCollecter) Collect() error {
 		return err
 	}
 
+	datastore.StoreMatch(match)
+
 	err = database.StoreMatch(match)
 	if err != nil {
 		return err
 	}
-
-	datastore.StoreMatch(match)
 
 	fmt.Printf("Collected match %s\n", c.MatchId)
 	return nil
