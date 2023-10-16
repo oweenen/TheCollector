@@ -18,7 +18,7 @@ func storeComp(matchId string, comp *types.Comp) {
 	}
 
 	bucket := "tft-stats-comps"
-	key := fmt.Sprintf("%s/%s.json", matchId, comp.Summoner.Puuid)
+	key := fmt.Sprintf("%s/%s.json", matchId, comp.SummonerPuuid)
 
 	_, err = client.PutObject(&s3.PutObjectInput{
 		Bucket:      aws.String(bucket),

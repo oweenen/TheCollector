@@ -5,46 +5,15 @@ import (
 )
 
 type Match struct {
-	Id           string        `json:"id"`
-	Date         int64         `json:"date"`
-	GameLength   float64       `json:"game_length"`
-	GameVersion  string        `json:"game_version"`
-	QueueId      int           `json:"queue_id"`
-	GameType     string        `json:"game_type"`
-	SetName      string        `json:"set_name"`
-	SetNumber    int           `json:"set_number"`
-	Comps        []Comp        `json:"comps,omitempty"`
-	Participants []Participant `json:"participants,omitempty"`
-}
-
-type Comp struct {
-	Match             *Match    `json:"match,omitempty"`
-	Summoner          *Summoner `json:"summoner,omitempty"`
-	Placement         int       `json:"placement"`
-	LastRound         int       `json:"last_round"`
-	Level             int       `json:"level,omitempty"`
-	RemainingGold     int       `json:"remaining_gold"`
-	PlayersEliminated int       `json:"players_eliminated"`
-	PlayerDamageDealt int       `json:"player_damage_dealt"`
-	TimeEliminated    float32   `json:"time_eliminated"`
-	Companion         int       `json:"companion"`
-	Augments          []string  `json:"augments"`
-	Traits            []Trait   `json:"traits"`
-	Units             []Unit    `json:"units"`
-}
-
-type Trait struct {
-	Name       string `json:"name"`
-	Style      int    `json:"style"`
-	TierActive int    `json:"tier_active"`
-	TierMax    int    `json:"tier_max"`
-}
-
-type Unit struct {
-	CharactedId string   `json:"character_id"`
-	Rarity      int      `json:"rarity"`
-	Tier        int      `json:"tier"`
-	Items       []string `json:"items"`
+	Id          string  `json:"id"`
+	Date        int64   `json:"date"`
+	GameLength  float64 `json:"game_length"`
+	GameVersion string  `json:"game_version"`
+	QueueId     int     `json:"queue_id"`
+	GameType    string  `json:"game_type"`
+	SetName     string  `json:"set_name"`
+	SetNumber   int     `json:"set_number"`
+	Comps       []Comp  `json:"comps,omitempty"`
 }
 
 func GetMatchIdRegion(matchId string) string {
@@ -66,9 +35,7 @@ func NewMatchFromRiotRes(matchRes *RiotMatchRes) *Match {
 
 	for i, comp := range matchRes.Info.Comps {
 		match.Comps[i] = Comp{
-			Summoner: &Summoner{
-				Puuid: comp.Puuid,
-			},
+			SummonerPuuid:     comp.Puuid,
 			Placement:         comp.Placement,
 			LastRound:         comp.LastRound,
 			Level:             comp.Level,

@@ -118,20 +118,6 @@ func UpdateProfile(c *fiber.Ctx) error {
 	return nil
 }
 
-// comps/:puuid
-func GetCompHistory(c *fiber.Ctx) error {
-	puuid := c.Params("puuid")
-
-	compHistory, err := database.GetRecentComps(puuid, 10)
-	if err != nil {
-		c.SendStatus(404)
-		return nil
-	}
-
-	c.Status(200).JSON(compHistory)
-	return nil
-}
-
 // matches/:puuid
 func GetMatchHistory(c *fiber.Ctx) error {
 	puuid := c.Params("puuid")

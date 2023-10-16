@@ -60,7 +60,7 @@ func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summon
 	errChan := make(chan error, len(match.Comps))
 
 	for _, comp := range match.Comps {
-		puuid := comp.Summoner.Puuid
+		puuid := comp.SummonerPuuid
 		wg.Add(1)
 		go func(puuid string) {
 			defer wg.Done()
