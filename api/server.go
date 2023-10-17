@@ -154,3 +154,19 @@ func GetSummonerStats(c *fiber.Ctx) error {
 	c.Status(200).JSON(*stats)
 	return nil
 }
+
+// matches/participants/:match_id
+func GetMatchParticipants(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
+	matchId := c.Params("match_id")
+
+	participants, err := database.GetMatchParticipants(matchId)
+	if err != nil {
+		c.Status(404).SendString(err.Error())
+		fmt.Print(err)
+		return err
+	}
+
+	c.Status(200).JSON(participants)
+	return nil
+}

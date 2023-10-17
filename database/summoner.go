@@ -6,6 +6,50 @@ import (
 	"strings"
 )
 
+func GetMatchParticipants(matchId string) ([]*types.Summoner, error) {
+	rows, err := db.Query(`
+	SELECT
+		Summoner.puuid,
+		Summoner.region,
+		Summoner.summoner_id,
+		Summoner.display_name,
+		Summoner.profile_icon_id,
+		Summoner.summoner_level,
+		Summoner.last_updated
+	FROM Comp
+	JOIN Summoner ON Comp.summoner_puuid = Summoner.puuid
+	WHERE Comp.match_id = ?
+		`,
+		matchId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var participants []*types.Summoner
+	defer rows.Close()
+	for rows.Next() {
+		summoner := new(types.Summoner)
+
+		err = rows.Scan(
+			&summoner.Puuid,
+			&summoner.Region,
+			&summoner.SummonerId,
+			&summoner.Name,
+			&summoner.ProfileIconId,
+			&summoner.SummonerLevel,
+			&summoner.LastUpdated,
+		)
+		if err != nil {
+			continue
+		}
+
+		participants = append(participants, summoner)
+	}
+
+	return participants, nil
+}
+
 func StoreSummoner(summoner *types.Summoner) error {
 	_, err := db.Exec(`
 		INSERT INTO Summoner (
