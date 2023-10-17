@@ -14,6 +14,7 @@ import (
 
 // summoner/:region/:name
 func GetSummonerByName(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	region := strings.ToLower(c.Params("region"))
 	name, err := url.QueryUnescape(c.Params("name"))
 	if err != nil {
@@ -52,6 +53,7 @@ func GetSummonerByName(c *fiber.Ctx) error {
 
 // summoner/:puuid
 func GetSummonerByPuuid(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	puuid := c.Params("puuid")
 
 	summoner, err := database.GetSummonerByPuuid(puuid)
@@ -71,6 +73,7 @@ func GetSummonerByPuuid(c *fiber.Ctx) error {
 
 // rank/:puuid
 func GetSummonerRank(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	puuid := c.Params("puuid")
 	rank, err := database.GetRank(puuid)
 	if err != nil {
@@ -133,6 +136,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 
 // matches/:puuid
 func GetMatchHistory(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	puuid := c.Params("puuid")
 
 	matchHistory, err := database.GetRecentMatches(puuid, 10)
@@ -147,6 +151,7 @@ func GetMatchHistory(c *fiber.Ctx) error {
 
 // matches/stats/:puuid
 func GetSummonerStats(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
 	puuid := c.Params("puuid")
 
 	stats, err := database.GetMatchStats(puuid)
