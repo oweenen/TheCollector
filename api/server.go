@@ -42,11 +42,6 @@ func GetSummonerByName(c *fiber.Ctx) error {
 		}
 	}
 
-	rank, err := database.GetRank(summoner.Puuid)
-	if err == nil {
-		summoner.Rank = rank
-	}
-
 	c.Status(200).JSON(*summoner)
 	return nil
 }
@@ -60,11 +55,6 @@ func GetSummonerByPuuid(c *fiber.Ctx) error {
 	if err != nil {
 		c.SendStatus(404)
 		return nil
-	}
-
-	rank, err := database.GetRank(summoner.Puuid)
-	if err == nil {
-		summoner.Rank = rank
 	}
 
 	c.Status(200).JSON(*summoner)

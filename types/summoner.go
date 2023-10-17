@@ -10,7 +10,6 @@ type Summoner struct {
 	ProfileIconId int    `json:"profileIconId"`
 	SummonerLevel int    `json:"summonerLevel"`
 	LastUpdated   int64  `json:"lastUpdated"`
-	Rank          *Rank  `json:"rank"`
 }
 
 type Participant struct {
