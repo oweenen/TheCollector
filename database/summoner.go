@@ -19,6 +19,7 @@ func GetMatchParticipants(matchId string) ([]*types.Summoner, error) {
 	FROM Comp
 	JOIN Summoner ON Comp.summoner_puuid = Summoner.puuid
 	WHERE Comp.match_id = ?
+	ORDER BY Comp.placement ASC
 		`,
 		matchId,
 	)
