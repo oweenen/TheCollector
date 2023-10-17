@@ -69,18 +69,15 @@ func GetSummonerByPuuid(c *fiber.Ctx) error {
 	return nil
 }
 
-// matches/stats/:puuid
-func GetSummonerStats(c *fiber.Ctx) error {
+// rank/:puuid
+func GetSummonerRank(c *fiber.Ctx) error {
 	puuid := c.Params("puuid")
-
-	stats, err := database.GetMatchStats(puuid)
+	rank, err := database.GetRank(puuid)
 	if err != nil {
-		c.Status(404).SendString(err.Error())
-		fmt.Print(err)
+		c.SendStatus(404)
 		return err
 	}
-
-	c.Status(200).JSON(*stats)
+	c.Status(200).JSON(rank)
 	return nil
 }
 
@@ -145,5 +142,20 @@ func GetMatchHistory(c *fiber.Ctx) error {
 	}
 
 	c.Status(200).JSON(matchHistory)
+	return nil
+}
+
+// matches/stats/:puuid
+func GetSummonerStats(c *fiber.Ctx) error {
+	puuid := c.Params("puuid")
+
+	stats, err := database.GetMatchStats(puuid)
+	if err != nil {
+		c.Status(404).SendString(err.Error())
+		fmt.Print(err)
+		return err
+	}
+
+	c.Status(200).JSON(*stats)
 	return nil
 }
