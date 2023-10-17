@@ -4,6 +4,22 @@ import (
 	"TheCollectorDG/types"
 )
 
+func GetMatchStats(puuid string) (*types.MatchStats, error) {
+	stats := new(types.MatchStats)
+	row := db.QueryRow(`
+	SELECT 
+		COUNT(*),
+		AVG(placement),
+		(SUM(CASE WHEN placement <= 4 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS Top4Rate
+	FROM Comp WHERE summoner_puuid = ?
+	`,
+		puuid,
+	)
+	err := row.Scan(&stats.TotalGames, &stats.AveragePlacement, &stats.Top4Rate)
+
+	return stats, err
+}
+
 func GetRecentMatches(puuid string, count int) ([]*types.Match, error) {
 	rows, err := db.Query(`
 	SELECT

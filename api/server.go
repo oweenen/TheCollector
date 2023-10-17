@@ -3,6 +3,7 @@ package api
 import (
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
@@ -65,6 +66,21 @@ func GetSummonerByPuuid(c *fiber.Ctx) error {
 	}
 
 	c.Status(200).JSON(*summoner)
+	return nil
+}
+
+// matches/stats/:puuid
+func GetSummonerStats(c *fiber.Ctx) error {
+	puuid := c.Params("puuid")
+
+	stats, err := database.GetMatchStats(puuid)
+	if err != nil {
+		c.Status(404).SendString(err.Error())
+		fmt.Print(err)
+		return err
+	}
+
+	c.Status(200).JSON(*stats)
 	return nil
 }
 

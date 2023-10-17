@@ -16,6 +16,12 @@ type Match struct {
 	Comps       []Comp  `json:"comps,omitempty"`
 }
 
+type MatchStats struct {
+	TotalGames       int     `json:"total_games"`
+	AveragePlacement float32 `json:"average_placement"`
+	Top4Rate         float32 `json:"top_4_rate"`
+}
+
 func GetMatchIdRegion(matchId string) string {
 	return strings.ToLower(strings.Split(matchId, "_")[0])
 }
