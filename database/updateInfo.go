@@ -3,7 +3,7 @@ package database
 import (
 	"TheCollectorDG/types"
 	"fmt"
-	"strings"
+	"time"
 )
 
 func GetUpdateInfo(puuid string) (*types.UpdateInfo, error) {
@@ -52,39 +52,49 @@ func GetStaleMatchHistory(regionCluster string) (*types.UpdateInfo, error) {
 	return updateInfo, err
 }
 
-func GetStaleRank(excludePuuids []string) (*types.UpdateInfo, error) {
-	var query string
-	if len(excludePuuids) > 0 {
-		query = fmt.Sprintf(`
-			SELECT
-				puuid,
-				region,
-				summoner_id,
-				rank_last_updated
-			FROM Summoner WHERE puuid NOT IN ('%s')
-			ORDER BY rank_last_updated LIMIT 1
-		`, strings.Join(excludePuuids, "', '"))
-	} else {
-		query = `
-			SELECT
-				puuid,
-				region,
-				summoner_id,
-				rank_last_updated
-			FROM Summoner
-			ORDER BY rank_last_updated LIMIT 1
-		`
+func GetStaleRankFromMatch(matchId string) ([]*types.UpdateInfo, error) {
+	// Threshold is 3 days ago
+	staleThreshold := time.Now().Unix() - 60*60*24*3
+
+	rows, err := db.Query(`
+	SELECT
+    	s.puuid,
+    	s.region,
+    	s.summoner_id,
+    	s.rank_last_updated
+	FROM
+    	Summoner AS s
+	INNER JOIN
+	    Comp AS c
+	ON
+	    c.summoner_puuid = s.puuid
+	WHERE
+	    c.match_id = ?
+	    AND s.rank_last_updated < ?
+	`, matchId, staleThreshold)
+	if err != nil {
+		return nil, err
+	}
+	var staleRanks []*types.UpdateInfo
+	defer rows.Close()
+	for rows.Next() {
+		updateInfo := new(types.UpdateInfo)
+
+		err = rows.Scan(
+			&updateInfo.Puuid,
+			&updateInfo.Region,
+			&updateInfo.SummonerId,
+			&updateInfo.RankLastUpdated,
+		)
+
+		if err != nil {
+			continue
+		}
+
+		staleRanks = append(staleRanks, updateInfo)
 	}
 
-	updateInfo := new(types.UpdateInfo)
-	row := db.QueryRow(query)
-	err := row.Scan(
-		&updateInfo.Puuid,
-		&updateInfo.Region,
-		&updateInfo.SummonerId,
-		&updateInfo.RankLastUpdated,
-	)
-	return updateInfo, err
+	return staleRanks, err
 }
 
 func SetLastUpdated(puuid string, updatedAt int64) error {

@@ -7,14 +7,12 @@ import (
 type RegionalSummonerCollectionQueue struct {
 	region                  string
 	summonerCollectionQueue collection.CollectionQueue
-	rankCollectionQueue     collection.CollectionQueue
 }
 
 func NewRegionalSummonerCollectionQueue(region string) *RegionalSummonerCollectionQueue {
 	return &RegionalSummonerCollectionQueue{
 		region:                  region,
 		summonerCollectionQueue: collection.NewCollectionQueue(),
-		rankCollectionQueue:     collection.NewCollectionQueue(),
 	}
 }
 
@@ -30,5 +28,5 @@ func (cq *RegionalSummonerCollectionQueue) QueueSummonerByPuuid(puuid string) ch
 
 func (cq *RegionalSummonerCollectionQueue) QueueRank(puuid string, summonerId string) chan error {
 	collecter := NewRankCollecter(cq.region, puuid, summonerId)
-	return cq.rankCollectionQueue.Queue(collecter)
+	return cq.summonerCollectionQueue.Queue(collecter)
 }

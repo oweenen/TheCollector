@@ -51,6 +51,8 @@ func (c MatchDetailsCollecter) Collect() error {
 		return err
 	}
 
+	QueueStaleRankUpdates(match, c.SummonerCollectionQueue)
+
 	fmt.Printf("Collected match %s\n", c.MatchId)
 	return nil
 }
@@ -79,5 +81,23 @@ func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summon
 		close(errChan)
 		return err
 	}
+	return nil
+}
+
+func QueueStaleRankUpdates(match *types.Match, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
+	// if match is not ranked skip
+	if match.QueueId != 1100 {
+		return nil
+	}
+
+	staleRanks, err := database.GetStaleRankFromMatch(match.Id)
+	if err != nil {
+		return err
+	}
+
+	for _, updateInfo := range staleRanks {
+		summonerCollectionQueue.QueueRank(updateInfo.Puuid, updateInfo.SummonerId)
+	}
+
 	return nil
 }
