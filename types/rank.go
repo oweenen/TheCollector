@@ -12,7 +12,6 @@ type Rank struct {
 
 func NewRankFromRiotRes(rankRes *riot.RiotRankRes) *Rank {
 	return &Rank{
-		Type:     rankRes.QueueType,
 		Tier:     rankRes.Tier,
 		Division: rankRes.Rank,
 		Lp:       rankRes.LeaguePoints,
