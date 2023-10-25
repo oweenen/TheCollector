@@ -6,10 +6,16 @@ import (
 	"database/sql"
 )
 
-func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
+func compHashBin(matchId string, summonerPuuid string) []byte {
 	hasher := md5.New()
-	hasher.Write([]byte(comp.SummonerPuuid + matchId))
+	hasher.Write([]byte(summonerPuuid + matchId))
 	hashBytes := hasher.Sum(nil)
+
+	return hashBytes
+}
+
+func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
+	hashBytes := compHashBin(matchId, comp.SummonerPuuid)
 
 	_, err := tx.Exec(`
 		INSERT IGNORE INTO Comp (

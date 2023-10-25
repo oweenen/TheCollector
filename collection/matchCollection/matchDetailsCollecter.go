@@ -42,15 +42,17 @@ func (c MatchDetailsCollecter) Collect() error {
 
 	err = QueueSummonersNotStored(match, c.SummonerCollectionQueue)
 	if err != nil {
-		fmt.Println("error 1")
 		return err
 	}
 
-	datastore.StoreMatch(match)
+	err = datastore.StoreMatch(match)
+	if err != nil {
+		fmt.Printf("Error storing match to s3: %v\n", err)
+		return err
+	}
 
 	err = database.StoreMatch(match)
 	if err != nil {
-		fmt.Println("error 2")
 		return err
 	}
 

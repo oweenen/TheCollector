@@ -10,11 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func storeComp(matchId string, comp *types.Comp) {
+func storeComp(matchId string, comp *types.Comp) error {
 	jsonData, err := json.Marshal(comp)
 	if err != nil {
-		fmt.Println("Error marshaling data to json:", err)
-		return
+		return err
 	}
 
 	bucket := "tft-stats-comps"
@@ -29,8 +28,5 @@ func storeComp(matchId string, comp *types.Comp) {
 		Metadata:    map[string]*string{},
 	})
 
-	if err != nil {
-		fmt.Printf("Error uploading %v to spaces: %v\n", key, err)
-		return
-	}
+	return err
 }
