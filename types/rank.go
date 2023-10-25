@@ -3,11 +3,9 @@ package types
 import "TheCollectorDG/riot"
 
 type Rank struct {
-	Type     string `json:"type"`
 	Tier     string `json:"tier"`
 	Division string `json:"division"`
 	Lp       int    `json:"lp"`
-	RawLp    int    `json:"raw_lp"`
 }
 
 func NewRankFromRiotRes(rankRes *riot.RiotRankRes) *Rank {
@@ -15,7 +13,6 @@ func NewRankFromRiotRes(rankRes *riot.RiotRankRes) *Rank {
 		Tier:     rankRes.Tier,
 		Division: rankRes.Rank,
 		Lp:       rankRes.LeaguePoints,
-		RawLp:    calcRawLp(rankRes.Tier, rankRes.Rank, rankRes.LeaguePoints),
 	}
 }
 

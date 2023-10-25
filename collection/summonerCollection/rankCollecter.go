@@ -32,9 +32,9 @@ func (c RankCollecter) Collect() error {
 		fmt.Printf("Error getting summoner %s from riot: %s\n", c.SummonerId, err)
 		return err
 	}
-	rank := types.NewRankFromRiotRes(rankRes)
 
-	if rank != nil {
+	if rankRes != nil {
+		rank := types.NewRankFromRiotRes(rankRes)
 		err = database.StoreRank(c.Puuid, rank)
 		if err != nil {
 			fmt.Printf("Error inserting rank %s into db %s\n", c.SummonerId, err)
