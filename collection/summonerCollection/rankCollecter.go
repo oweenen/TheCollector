@@ -3,6 +3,7 @@ package summonerCollection
 import (
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
+	"TheCollectorDG/types"
 	"fmt"
 	"time"
 )
@@ -26,12 +27,12 @@ func (c RankCollecter) Id() string {
 }
 
 func (c RankCollecter) Collect() error {
-	// get rank from riot
-	rank, err := riot.GetRank(c.Region, c.SummonerId)
+	rankRes, err := riot.GetRank(c.Region, c.SummonerId)
 	if err != nil {
 		fmt.Printf("Error getting summoner %s from riot: %s\n", c.SummonerId, err)
 		return err
 	}
+	rank := types.NewRankFromRiotRes(rankRes)
 
 	if rank != nil {
 		err = database.StoreRank(c.Puuid, rank)

@@ -25,13 +25,13 @@ func (c SummonerByNameCollecter) Id() string {
 }
 
 func (c SummonerByNameCollecter) Collect() error {
-	// get summoner from riot
 	updatedAt := time.Now().Unix()
-	summoner, err := riot.GetSummonerByName(c.Region, c.RawName)
+	summonerRes, err := riot.GetSummonerByName(c.Region, c.RawName)
 	if err != nil {
 		fmt.Printf("Error getting summoner %s from riot: %s\n", c.RawName, err)
 		return err
 	}
+	summoner := types.NewSummonerFromRiotRes(c.Region, summonerRes)
 
 	summoner.LastUpdated = updatedAt
 

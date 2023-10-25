@@ -1,6 +1,9 @@
 package types
 
-import "strings"
+import (
+	"TheCollectorDG/riot"
+	"strings"
+)
 
 type Summoner struct {
 	Puuid         string `json:"puuid"`
@@ -21,7 +24,7 @@ func ToRawName(displayName string) string {
 	return strings.ToLower(strings.ReplaceAll(displayName, " ", ""))
 }
 
-func NewSummonerFromRiotRes(region string, summonerRes *RiotSummonerRes) *Summoner {
+func NewSummonerFromRiotRes(region string, summonerRes *riot.RiotSummonerRes) *Summoner {
 	return &Summoner{
 		Puuid:         summonerRes.Puuid,
 		Region:        strings.ToLower(region),

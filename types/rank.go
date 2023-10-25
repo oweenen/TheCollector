@@ -1,5 +1,7 @@
 package types
 
+import "TheCollectorDG/riot"
+
 type Rank struct {
 	Type     string `json:"type"`
 	Tier     string `json:"tier"`
@@ -8,7 +10,7 @@ type Rank struct {
 	RawLp    int    `json:"raw_lp"`
 }
 
-func NewRankFromRiotRes(rankRes RiotRankRes) *Rank {
+func NewRankFromRiotRes(rankRes *riot.RiotRankRes) *Rank {
 	return &Rank{
 		Type:     rankRes.QueueType,
 		Tier:     rankRes.Tier,

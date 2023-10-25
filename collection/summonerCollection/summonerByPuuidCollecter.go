@@ -3,6 +3,7 @@ package summonerCollection
 import (
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
+	"TheCollectorDG/types"
 	"fmt"
 )
 
@@ -23,11 +24,12 @@ func (c SummonerByPuuidCollecter) Id() string {
 }
 
 func (c SummonerByPuuidCollecter) Collect() error {
-	summoner, err := riot.GetSummonerByPuuid(c.Region, c.Puuid)
+	summonerRes, err := riot.GetSummonerByPuuid(c.Region, c.Puuid)
 	if err != nil {
 		fmt.Printf("Error getting summoner %s from riot: %s\n", c.Puuid, err)
 		return err
 	}
+	summoner := types.NewSummonerFromRiotRes(c.Region, summonerRes)
 
 	err = database.StoreSummoner(summoner)
 	if err != nil {

@@ -29,11 +29,12 @@ func (c MatchDetailsCollecter) Id() string {
 }
 
 func (c MatchDetailsCollecter) Collect() error {
-	match, err := riot.GetMatchDetails(c.RegionalServer, c.MatchId)
+	matchRes, err := riot.GetMatchDetails(c.RegionalServer, c.MatchId)
 	if err != nil {
 		fmt.Printf("ERROR failed to get match %s from riot: %s\n", c.MatchId, err)
 		return err
 	}
+	match := types.NewMatchFromRiotRes(matchRes)
 
 	if match.QueueId == 1110 || match.QueueId == 1111 {
 		return nil
@@ -41,6 +42,7 @@ func (c MatchDetailsCollecter) Collect() error {
 
 	err = QueueSummonersNotStored(match, c.SummonerCollectionQueue)
 	if err != nil {
+		fmt.Println("error 1")
 		return err
 	}
 
@@ -48,6 +50,7 @@ func (c MatchDetailsCollecter) Collect() error {
 
 	err = database.StoreMatch(match)
 	if err != nil {
+		fmt.Println("error 2")
 		return err
 	}
 
