@@ -134,25 +134,3 @@ func MatchIsStored(matchId string) bool {
 	db.QueryRow(`SELECT EXISTS (SELECT 1 FROM TFT_Match WHERE id = ?)`, matchId).Scan(&stored)
 	return stored
 }
-
-type MatchStats struct {
-	TotalGames       int     `json:"total_games"`
-	AveragePlacement float32 `json:"average_placement"`
-	Top4Rate         float32 `json:"top_4_rate"`
-}
-
-func GetMatchStats(puuid string) (*MatchStats, error) {
-	stats := new(MatchStats)
-	row := db.QueryRow(`
-	SELECT 
-		COUNT(*),
-		AVG(placement),
-		(SUM(CASE WHEN placement <= 4 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS Top4Rate
-	FROM Comp WHERE summoner_puuid = ?
-	`,
-		puuid,
-	)
-	err := row.Scan(&stats.TotalGames, &stats.AveragePlacement, &stats.Top4Rate)
-
-	return stats, err
-}

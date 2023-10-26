@@ -74,6 +74,22 @@ func GetSummonerRank(c *fiber.Ctx) error {
 	return nil
 }
 
+// rank/stats/:puuid
+func GetRankStats(c *fiber.Ctx) error {
+	c.Set("Access-Control-Allow-Origin", "*")
+	puuid := c.Params("puuid")
+
+	stats, err := database.GetRankStats(puuid)
+	if err != nil {
+		c.Status(404).SendString(err.Error())
+		fmt.Print(err)
+		return err
+	}
+
+	c.Status(200).JSON(*stats)
+	return nil
+}
+
 // update/profile/:puuid
 func UpdateProfile(c *fiber.Ctx) error {
 	c.Set("Access-Control-Allow-Origin", "*")
@@ -81,37 +97,35 @@ func UpdateProfile(c *fiber.Ctx) error {
 	updateInfo, err := database.GetUpdateInfo(puuid)
 	if err != nil {
 		c.SendStatus(404)
-		return nil
+		return err
 	}
 
-	summonerCQ, ok := summonerCollectionRegionRouter[updateInfo.Region]
-	if !ok {
-		c.SendStatus(400)
-		return nil
-	}
-	matchCQ, ok := matchCollectionRegionRouter[riot.RiotRegionRoutes[updateInfo.Region]]
-	if !ok {
-		c.SendStatus(500)
-		return nil
-	}
+	summonerCQ, _ := summonerCollectionRegionRouter[updateInfo.Region]
+	matchCQ, _ := matchCollectionRegionRouter[riot.RiotRegionRoutes[updateInfo.Region]]
 
 	err = <-summonerCQ.QueueSummonerByPuuid(updateInfo.Puuid)
 	if err != nil {
 		c.SendStatus(500)
-		return nil
+		return err
 	}
 
 	err = <-summonerCQ.QueueRank(updateInfo.Puuid, updateInfo.SummonerId)
 	if err != nil {
 		log.Panicln(err)
 		c.SendStatus(500)
-		return nil
+		return err
 	}
 
 	err = <-matchCQ.QueueMatchHistory(updateInfo.Puuid, updateInfo.MatchesLastUpdated)
 	if err != nil {
 		c.SendStatus(500)
-		return nil
+		return err
+	}
+
+	err = database.UpdateRankStats(updateInfo.Puuid)
+	if err != nil {
+		c.SendStatus(500)
+		return err
 	}
 
 	err = database.SetLastUpdated(updateInfo.Puuid, time.Now().Unix())
@@ -136,22 +150,6 @@ func GetMatchHistory(c *fiber.Ctx) error {
 	}
 
 	c.Status(200).JSON(matchHistory)
-	return nil
-}
-
-// matches/stats/:puuid
-func GetSummonerStats(c *fiber.Ctx) error {
-	c.Set("Access-Control-Allow-Origin", "*")
-	puuid := c.Params("puuid")
-
-	stats, err := database.GetMatchStats(puuid)
-	if err != nil {
-		c.Status(404).SendString(err.Error())
-		fmt.Print(err)
-		return err
-	}
-
-	c.Status(200).JSON(*stats)
 	return nil
 }
 

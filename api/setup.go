@@ -23,7 +23,7 @@ func Start() {
 	app.Get("summoner/:region/:name", GetSummonerByName)
 	app.Get("summoner/:puuid", GetSummonerByPuuid)
 	app.Get("rank/:puuid", GetSummonerRank)
-	app.Get("matches/stats/:puuid", GetSummonerStats)
+	app.Get("rank/stats/:puuid", GetRankStats)
 	app.Get("matches/:puuid", GetMatchHistory)
 	app.Get("update/profile/:puuid", UpdateProfile)
 	app.Get("matches/participants/:match_id", GetMatchParticipants)
