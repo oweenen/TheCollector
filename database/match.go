@@ -116,7 +116,7 @@ func StoreMatch(match *types.Match) error {
 					taken = -1
 				}
 
-				err := StoreAugment(tx, compHashBin, augment, taken)
+				err := StoreAugment(tx, compHashBin, augment, taken, comp.Placement)
 				if err != nil {
 					return err
 				}

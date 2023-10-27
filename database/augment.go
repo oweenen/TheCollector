@@ -2,18 +2,20 @@ package database
 
 import "database/sql"
 
-func StoreAugment(tx *sql.Tx, compHash []byte, augment string, taken int) error {
+func StoreAugment(tx *sql.Tx, compHash []byte, augment string, taken int, placement int) error {
 	_, err := tx.Exec(`
 		INSERT INTO Augment (
 			comp_hash_bin,
 			augment_id,
-			taken
+			taken,
+			placement
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 		`,
 		compHash,
 		augment,
 		taken,
+		placement,
 	)
 	return err
 }
