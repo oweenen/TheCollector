@@ -22,7 +22,7 @@ func NewMatchFromRiotRes(matchRes *riot.RiotMatchRes) *Match {
 		Id:          matchRes.MetaData.MatchId,
 		Date:        matchRes.Info.Date,
 		GameLength:  matchRes.Info.Length,
-		GameVersion: matchRes.Info.Version,
+		GameVersion: formatGameVersion(matchRes.Info.Version),
 		QueueId:     matchRes.Info.QueueId,
 		GameType:    matchRes.Info.GameType,
 		SetName:     matchRes.Info.SetName,
@@ -87,4 +87,9 @@ func expectedAugments(lastRound int) int {
 		return 1
 	}
 	return 0
+}
+
+func formatGameVersion(gameVersion string) string {
+	parts := strings.Split(gameVersion, " ")
+	return parts[len(parts)-1]
 }
