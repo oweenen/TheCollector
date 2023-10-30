@@ -31,6 +31,10 @@ func NewMatchFromRiotRes(matchRes *riot.RiotMatchRes) *Match {
 	}
 
 	for i, comp := range matchRes.Info.Comps {
+		if len(comp.Augments) == expectedAugments(comp.LastRound)-1 {
+			comp.Augments = append([]string{"TFT9_Augment_Legend"}, comp.Augments...)
+		}
+
 		match.Comps[i] = Comp{
 			SummonerPuuid:     comp.Puuid,
 			Placement:         comp.Placement,
@@ -72,4 +76,15 @@ func NewMatchFromRiotRes(matchRes *riot.RiotMatchRes) *Match {
 
 func GetMatchIdRegion(matchId string) string {
 	return strings.ToLower(strings.Split(matchId, "_")[0])
+}
+
+func expectedAugments(lastRound int) int {
+	if lastRound >= 20 {
+		return 3
+	} else if lastRound >= 13 {
+		return 2
+	} else if lastRound >= 5 {
+		return 1
+	}
+	return 0
 }

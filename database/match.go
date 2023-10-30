@@ -104,19 +104,7 @@ func StoreMatch(match *types.Match) error {
 		for _, comp := range match.Comps {
 			compHashBin := compHashBin(match.Id, comp.SummonerPuuid)
 			for i, augment := range comp.Augments {
-				var taken int
-				if len(comp.Augments) == 3 {
-					// all augments present
-					taken = i
-				} else if len(comp.Augments) == 2 && comp.LastRound >= 20 {
-					// 1 augment missing, but all augments chosen (2-1 is legend augment)
-					taken = i + 1
-				} else {
-					// rare edge cases taken is unknown
-					taken = -1
-				}
-
-				err := StoreAugment(tx, compHashBin, augment, taken, comp.Placement)
+				err := StoreAugment(tx, compHashBin, match.GameVersion, augment, i, comp.Placement)
 				if err != nil {
 					return err
 				}
