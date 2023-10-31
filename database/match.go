@@ -2,7 +2,7 @@ package database
 
 import (
 	"TheCollectorDG/types"
-	"time"
+	"database/sql"
 )
 
 func GetRecentMatches(puuid string, count int) ([]*types.Match, error) {
@@ -54,11 +54,8 @@ func GetRecentMatches(puuid string, count int) ([]*types.Match, error) {
 	return matches, nil
 }
 
-func StoreMatch(match *types.Match) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
+func StoreMatch(tx *sql.Tx, match *types.Match) error {
+	var err error
 
 	defer func() {
 		if err != nil {
@@ -88,32 +85,6 @@ func StoreMatch(match *types.Match) error {
 		match.SetName,
 		match.SetNumber,
 	)
-	if err != nil {
-		return err
-	}
-
-	// store comps
-	for _, comp := range match.Comps {
-		err := storeComp(tx, match.Id, &comp)
-		if err != nil {
-			return err
-		}
-	}
-
-	// store augment if match is ranked and match is from within the past week
-	if match.QueueId == 1100 && match.Date > time.Now().Unix()-60*60*24*7 {
-		for _, comp := range match.Comps {
-			compHashBin := compHashBin(match.Id, comp.SummonerPuuid)
-			for i, augment := range comp.Augments {
-				err := StoreAugment(tx, compHashBin, match.GameVersion, augment, i, comp.Placement)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	err = tx.Commit()
 
 	return err
 }

@@ -34,7 +34,7 @@ func (c MatchHistoryCollecter) Collect() error {
 	// fetch match history from riot
 	matchIds, err := riot.GetMatchHistory(c.RegionalServer, c.Puuid, c.After)
 	if err != nil {
-		fmt.Printf("Failed to fetch match history from riot\nERROR: %v\nDETAILS:%+v\n", err.Error(), c)
+		fmt.Printf("Failed to fetch match history from riot\n\tERROR: %v\n\tCONTEXT:%+v\n", err.Error(), c)
 		return err
 	}
 
@@ -47,7 +47,7 @@ func (c MatchHistoryCollecter) Collect() error {
 	// set matches_updated_at
 	err = database.SetMatchesUpdatedAt(c.Puuid, updatedAt)
 	if err != nil {
-		fmt.Printf("Failed to set matches_updated_at\nERROR: %v\nDETAILS: {puuid: %v, updatedAt: %v}\n", err.Error(), c.Puuid, updatedAt)
+		fmt.Printf("Failed to set matches_updated_at\n\tERROR: %v\n\tupdatedAt: %v\n\tCONTEXT:%+v\n", err.Error(), updatedAt, c)
 		return err
 	}
 

@@ -14,7 +14,7 @@ func compHashBin(matchId string, summonerPuuid string) []byte {
 	return hashBytes
 }
 
-func storeComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
+func StoreComp(tx *sql.Tx, matchId string, comp *types.Comp) error {
 	hashBytes := compHashBin(matchId, comp.SummonerPuuid)
 
 	_, err := tx.Exec(`

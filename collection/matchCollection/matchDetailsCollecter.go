@@ -8,6 +8,7 @@ import (
 	"TheCollectorDG/types"
 	"fmt"
 	"sync"
+	"time"
 )
 
 type MatchDetailsCollecter struct {
@@ -29,52 +30,115 @@ func (c MatchDetailsCollecter) Id() string {
 }
 
 func (c MatchDetailsCollecter) Collect() error {
+	// fetch match data from riot
 	matchRes, err := riot.GetMatchDetails(c.RegionalServer, c.MatchId)
 	if err != nil {
-		fmt.Printf("ERROR failed to get match %s from riot: %s\n", c.MatchId, err)
+		fmt.Printf("Failed to get match details from riot\n\tERROR: %v\n\tCONTEXT: %+v\n", err, c)
 		return err
 	}
+
+	// create match from matchRes
 	match := types.NewMatchFromRiotRes(matchRes)
 
-	if match.QueueId == 1110 || match.QueueId == 1111 {
+	// skip storing match if match is not Normal, Ranked, DoubleUp
+	if match.QueueId != 1090 && match.QueueId != 1100 && match.QueueId != 1160 {
 		return nil
 	}
 
-	err = QueueSummonersNotStored(match, c.SummonerCollectionQueue)
+	// extract summoners not stored from match
+	summonersNotStored := extractSummonersNotStored(match)
+
+	// queue and await summoners not stored
+	err = queueAndAwaitSummonersNotStored(summonersNotStored, c.SummonerCollectionQueue)
 	if err != nil {
+		fmt.Printf("Aborting match details collection, summoner collection failed\n\tERROR: %v\n\tCONTEXT: %+v\n", err, c)
 		return err
 	}
 
+	// store match details to s3
 	err = datastore.StoreMatch(match)
 	if err != nil {
-		fmt.Printf("Error storing match to s3: %v\n", err)
+		fmt.Printf("Failed to store match details to s3\nERROR: %v\n\tCONTEXT: %+v\n\tMATCH: %+v\n", err, c, match)
 		return err
 	}
 
-	err = database.StoreMatch(match)
-	if err != nil {
-		return err
-	}
-
+	// queue stale ranks
 	QueueStaleRankUpdates(match, c.SummonerCollectionQueue)
+
+	// create database transaction
+	tx, err := database.NewTransaction()
+	if err != nil {
+		tx.Rollback()
+		fmt.Printf("Failed to create database transaction\nERROR: %v\n", err)
+		return err
+	}
+
+	// store match to database
+	err = database.StoreMatch(tx, match)
+	if err != nil {
+		tx.Rollback()
+		fmt.Printf("Failed to store match to database\nERROR: %v\n\tCONTEXT: %+v\n\tMATCH: %+v\n", err, c, match)
+		return err
+	}
+
+	// store comps to database
+	for _, comp := range match.Comps {
+		err = database.StoreComp(tx, match.Id, &comp)
+		if err != nil {
+			tx.Rollback()
+			fmt.Printf("Failed to store comp to database\nERROR: %v\n\tCONTEXT: %+v\n\tCOMP: %+v\n", err, c, comp)
+			return err
+		}
+	}
+
+	// store augment if match is ranked and match is from within the past week
+	if match.QueueId == 1100 && match.Date > time.Now().Unix()-60*60*24*7 {
+		for _, comp := range match.Comps {
+			for i, augment := range comp.Augments {
+				err := database.StoreAugment(tx, match.Id, comp.SummonerPuuid, match.GameVersion, augment, i, comp.Placement)
+				if err != nil {
+					tx.Rollback()
+					fmt.Printf("Failed to store augment to database\nERROR: %v\n\tCONTEXT: %+v\n\tAUGMENT: %+v\n", err, c, augment)
+					return err
+				}
+			}
+		}
+	}
+
+	// commit database transaction
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		fmt.Printf("Failed to commit transaction to database\nERROR: %v\n\tCONTEXT: %+v\n", err, c)
+		return err
+	}
 
 	fmt.Printf("Collected match %s\n", c.MatchId)
 	return nil
 }
 
-func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
-	var wg sync.WaitGroup
-	errChan := make(chan error, len(match.Comps))
-
+func extractSummonersNotStored(match *types.Match) []string {
+	var result = []string{}
 	for _, comp := range match.Comps {
-		puuid := comp.SummonerPuuid
+		if !database.SummonerIsStored(comp.SummonerPuuid) {
+			result = append(result, comp.SummonerPuuid)
+		}
+	}
+	return result
+}
+
+func queueAndAwaitSummonersNotStored(summoners []string, summonerCollectionQueue *summonerCollection.RegionalSummonerCollectionQueue) error {
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(summoners))
+
+	for _, puuid := range summoners {
 		wg.Add(1)
 		go func(puuid string) {
 			defer wg.Done()
 			if !database.SummonerIsStored(puuid) {
 				err := <-summonerCollectionQueue.QueueSummonerByPuuid(puuid)
 				if err != nil {
-					errChan <- fmt.Errorf("failed to collect summoner %s", puuid)
+					errChan <- err
 				}
 			}
 		}(puuid)
@@ -86,6 +150,7 @@ func QueueSummonersNotStored(match *types.Match, summonerCollectionQueue *summon
 		close(errChan)
 		return err
 	}
+
 	return nil
 }
 

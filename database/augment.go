@@ -5,7 +5,8 @@ import (
 	"fmt"
 )
 
-func StoreAugment(tx *sql.Tx, compHash []byte, gameVersion string, augment string, taken int, placement int) error {
+func StoreAugment(tx *sql.Tx, matchId, summonerPuuid, gameVersion, augment string, taken, placement int) error {
+	compHashBin := compHashBin(matchId, summonerPuuid)
 	_, err := tx.Exec(`
 		INSERT INTO Augment (
 			comp_hash_bin,
@@ -16,7 +17,7 @@ func StoreAugment(tx *sql.Tx, compHash []byte, gameVersion string, augment strin
 		)
 		VALUES (?, ?, ?, ?, ?)
 		`,
-		compHash,
+		compHashBin,
 		gameVersion,
 		augment,
 		taken,
