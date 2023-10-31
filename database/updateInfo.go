@@ -53,8 +53,8 @@ func GetStaleMatchHistory(regionCluster string) (*types.UpdateInfo, error) {
 }
 
 func GetStaleRankFromMatch(matchId string) ([]*types.UpdateInfo, error) {
-	// Threshold is 3 days ago
-	staleThreshold := time.Now().Unix() - 60*60*24*3
+	// Threshold is 1 week ago
+	staleThreshold := time.Now().Unix() - 60*60*24*7
 
 	rows, err := db.Query(`
 	SELECT

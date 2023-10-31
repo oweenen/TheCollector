@@ -27,6 +27,7 @@ func Start() {
 	app.Get("matches/:puuid", GetMatchHistory)
 	app.Get("update/profile/:puuid", UpdateProfile)
 	app.Get("matches/participants/:match_id", GetMatchParticipants)
+	app.Get("augment/stats", GetAugmentStats)
 
 	port := os.Getenv("PORT")
 	if port == "" {

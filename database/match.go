@@ -2,6 +2,7 @@ package database
 
 import (
 	"TheCollectorDG/types"
+	"time"
 )
 
 func GetRecentMatches(puuid string, count int) ([]*types.Match, error) {
@@ -99,8 +100,8 @@ func StoreMatch(match *types.Match) error {
 		}
 	}
 
-	// store augments if queue is ranked
-	if match.QueueId == 1100 {
+	// store augment if match is ranked and match is from within the past week
+	if match.QueueId == 1100 && match.Date > time.Now().Unix()-60*60*24*7 {
 		for _, comp := range match.Comps {
 			compHashBin := compHashBin(match.Id, comp.SummonerPuuid)
 			for i, augment := range comp.Augments {
