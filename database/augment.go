@@ -27,9 +27,9 @@ func StoreAugment(tx *sql.Tx, matchId, summonerPuuid, gameVersion, augment strin
 }
 
 type AugmentStats struct {
-	AvgPlacement float32
-	TimesPlayed  int
-	Frequency    float32
+	AvgPlacement float32 `json:"avg_placement"`
+	TimesPlayed  int     `json:"times_played"`
+	Frequency    float32 `json:"frequency"`
 }
 
 func GetAugmentStats() (map[string]map[string][]*AugmentStats, error) {
