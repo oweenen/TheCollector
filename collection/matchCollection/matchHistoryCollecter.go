@@ -30,29 +30,50 @@ func (c MatchHistoryCollecter) Id() string {
 
 func (c MatchHistoryCollecter) Collect() error {
 	updatedAt := time.Now().Unix()
-	history, err := riot.GetMatchHistory(c.RegionalServer, c.Puuid, c.After)
+
+	// fetch match history from riot
+	matchIds, err := riot.GetMatchHistory(c.RegionalServer, c.Puuid, c.After)
 	if err != nil {
+		fmt.Printf("Failed to fetch match history from riot\nERROR: %v\nDETAILS:%+v\n", err.Error(), c)
 		return err
 	}
 
-	collectMatches(history, c.MatchCQ)
+	// filter match ids not stored
+	matchIdsNotStored := filterMatchIdsNotStored(matchIds)
 
+	// queue new matches
+	queueAndAwaitMatches(matchIdsNotStored, c.MatchCQ)
+
+	// set matches_updated_at
 	err = database.SetMatchesUpdatedAt(c.Puuid, updatedAt)
+	if err != nil {
+		fmt.Printf("Failed to set matches_updated_at\nERROR: %v\nDETAILS: {puuid: %v, updatedAt: %v}\n", err.Error(), c.Puuid, updatedAt)
+		return err
+	}
+
+	// log collection
 	fmt.Printf("Collected match history for summoner %s\n", c.Puuid)
-	return err
+
+	return nil
 }
 
-func collectMatches(matchIds []string, matchCQ *RegionalMatchCollectionQueue) {
+func filterMatchIdsNotStored(matchIds []string) []string {
+	result := []string{}
+	for _, matchId := range matchIds {
+		if !database.MatchIsStored(matchId) {
+			result = append(result, matchId)
+		}
+	}
+	return result
+}
+
+func queueAndAwaitMatches(matchIds []string, matchCQ *RegionalMatchCollectionQueue) {
 	var wg sync.WaitGroup
 	for _, matchId := range matchIds {
 		wg.Add(1)
 		go func(matchId string) {
 			defer wg.Done()
-			if !database.MatchIsStored(matchId) {
-				if err := <-matchCQ.QueueMatchDetails(matchId); err != nil {
-					fmt.Printf("error collecting match %s: %s\n", matchId, err)
-				}
-			}
+			<-matchCQ.QueueMatchDetails(matchId)
 		}(matchId)
 	}
 	wg.Wait()
