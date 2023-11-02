@@ -92,7 +92,7 @@ func (c MatchDetailsCollecter) Collect() error {
 	}
 
 	// store augment if match is ranked and match is from within the past week
-	if match.QueueId == 1100 && match.Date > time.Now().Unix()-1000*60*60*24*7 {
+	if match.QueueId == 1100 && match.Date > time.Now().UnixMilli()-1000*60*60*24*7 {
 		for _, comp := range match.Comps {
 			for i, augment := range comp.Augments {
 				err := database.StoreAugment(tx, match.Id, comp.SummonerPuuid, match.GameVersion, augment, i, comp.Placement)
