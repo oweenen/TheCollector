@@ -7,6 +7,7 @@ import (
 	"TheCollectorDG/database"
 	"TheCollectorDG/datastore"
 	"TheCollectorDG/riot"
+	"TheCollectorDG/stats"
 	"log"
 	"os"
 	"strconv"
@@ -62,6 +63,8 @@ func main() {
 		go matchCollection.MatchCollectionLoop(prioMatchCollectionQueue, matchCollectionQueue, requestIntervalDuration)
 		time.Sleep(queueSpacing)
 	}
+
+	go stats.AugmentStatsRefreshLoop(time.Hour)
 
 	api.Setup(prioSummonerCollectionRouter, prioMatchCollectionRouter)
 	api.Start()

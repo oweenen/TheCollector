@@ -90,6 +90,11 @@ func expectedAugments(lastRound int) int {
 }
 
 func formatGameVersion(gameVersion string) string {
+	prefix := len("\u003cReleases/")
+	postfix := len("\u003e")
+
 	parts := strings.Split(gameVersion, " ")
-	return parts[len(parts)-1]
+	release := parts[len(parts)-1]
+	trimmedGameVersion := release[prefix : len(release)-postfix]
+	return trimmedGameVersion
 }

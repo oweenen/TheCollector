@@ -3,6 +3,7 @@ package api
 import (
 	"TheCollectorDG/database"
 	"TheCollectorDG/riot"
+	"TheCollectorDG/stats"
 	"fmt"
 	"log"
 	"net/url"
@@ -173,13 +174,6 @@ func GetMatchParticipants(c *fiber.Ctx) error {
 func GetAugmentStats(c *fiber.Ctx) error {
 	c.Set("Access-Control-Allow-Origin", "*")
 
-	augmentStats, err := database.GetAugmentStats()
-	if err != nil {
-		c.Status(404).SendString(err.Error())
-		fmt.Print(err)
-		return err
-	}
-
-	c.Status(200).JSON(augmentStats)
+	c.Status(200).JSON(stats.LatestPage)
 	return nil
 }
