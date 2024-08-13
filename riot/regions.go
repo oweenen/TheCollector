@@ -1,6 +1,6 @@
 package riot
 
-var RiotRegionRoutes = map[string]string{
+var RegionToCluster = map[string]string{
 	"na1":  "americas",
 	"br1":  "americas",
 	"la1":  "americas",
@@ -19,7 +19,7 @@ var RiotRegionRoutes = map[string]string{
 	"oc1":  "sea",
 }
 
-var RiotRegionClusters = map[string][]string{
+var ClusterToRegions = map[string][]string{
 	"americas": {"na1", "br1", "la1", "la2"},
 	"asia":     {"kr", "jp1"},
 	"europe":   {"eun1", "euw1", "tr1", "ru"},

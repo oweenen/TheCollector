@@ -3,12 +3,24 @@ package riot
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
-func getJson(url string, target interface{}) error {
-	res, err := http.Get(url)
+func getJson(server string, route string, target interface{}) error {
+	url := fmt.Sprintf("https://%v.api.riotgames.com/%v", server, route)
 
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("X-Riot-Token", key)
+
+	limiter, ok := limiters[server]
+	if !ok {
+		return fmt.Errorf("no limiter defined %v", server)
+	}
+	<-limiter.C
+
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	}
