@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type RiotRankRes struct {
+type Rank struct {
 	LeagueId     string `json:"leagueId"`
 	QueueType    string `json:"queueType"`
 	Tier         string `json:"tier"`
@@ -20,10 +20,10 @@ type RiotRankRes struct {
 	HotStreak    bool   `json:"hotStreak"`
 }
 
-func GetRank(region string, summonerId string) (*RiotRankRes, error) {
-	var rankRes []RiotRankRes
-	url := fmt.Sprintf("https://%v.api.riotgames.com/tft/league/v1/entries/by-summoner/%v?api_key=%v", region, summonerId, key)
-	err := getJson(url, &rankRes)
+func GetRank(region string, summonerId string) (*Rank, error) {
+	var rankRes []Rank
+	route := fmt.Sprintf("tft/league/v1/entries/by-summoner/%v", summonerId)
+	err := getJson(region, route, &rankRes)
 	if err != nil {
 		return nil, err
 	}

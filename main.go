@@ -1,71 +1,106 @@
 package main
 
 import (
-	"TheCollectorDG/api"
-	"TheCollectorDG/collection/matchCollection"
-	"TheCollectorDG/collection/summonerCollection"
-	"TheCollectorDG/database"
-	"TheCollectorDG/datastore"
+	"TheCollectorDG/db"
 	"TheCollectorDG/riot"
-	"TheCollectorDG/stats"
+	"TheCollectorDG/types"
+	"context"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/joho/godotenv"
 )
 
+var conn *pgx.Conn
+var queries *db.Queries
+
+func init() {
+	var err error
+
+	ctx := context.Background()
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	conn, err = pgx.Connect(ctx, os.Getenv("DB_URL"))
+	if err != nil {
+		panic(err)
+	}
+
+	queries = db.New(conn)
+}
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: Failed to load .env file")
+	ctx := context.Background()
+
+	collectionLoop(ctx)
+}
+
+func collectionLoop(ctx context.Context) {
+	for {
+		oldestMatchHistories, _ := queries.GetOldestMatchHistories(ctx, 1)
+		puuid := oldestMatchHistories[0].Puuid
+
+		updatedAt := time.Now()
+		matchIds, _ := riot.GetMatchHistory("americas", puuid, oldestMatchHistories[0].MatchesUpdated.Time.UnixMilli())
+		matchIdsLen := len(matchIds)
+
+		log.Printf("Got %v matchIds from summoner %v\n", matchIdsLen, puuid)
+
+		for i, matchId := range matchIds {
+			if exists, _ := queries.MatchExists(ctx, matchId); exists {
+				log.Printf("%v/%v: Skipping matchId %v...\n", i+1, matchIdsLen, matchId)
+				continue
+			}
+
+			matchDetails, _ := riot.GetMatchDetails("americas", matchId)
+			storeMatchDetails(ctx, matchDetails)
+			log.Printf("%v/%v: Inserted new match with matchId %v!\n", i+1, matchIdsLen, matchId)
+		}
+
+		queries.SetMatchesUpdated(ctx, db.SetMatchesUpdatedParams{
+			Puuid: puuid,
+			MatchesUpdated: pgtype.Timestamp{
+				Time: updatedAt,
+			},
+		})
+	}
+}
+
+func storeMatchDetails(ctx context.Context, matchDetails *riot.Match) {
+	// insert participants
+	for _, puuid := range matchDetails.MetaData.Participants {
+		queries.InsertPuuid(ctx, puuid)
 	}
 
-	database.SetupConnection()
-	datastore.SetupConnection()
-	riot.Setup()
+	tx, _ := conn.Begin(ctx)
+	defer tx.Rollback(ctx)
+	qtx := queries.WithTx(tx)
 
-	rateLimit, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_LIMIT"), 32)
-	if err != nil {
-		rateLimit = 100
-	}
-	ratePeriod, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_PERIOD"), 32)
-	if err != nil {
-		ratePeriod = 120000
-	}
-	rateEfficiency, err := strconv.ParseFloat(os.Getenv("RIOT_RATE_EFFICIENCY"), 32)
-	if err != nil {
-		rateEfficiency = 0.95
-	}
-	requestInterval := ratePeriod / rateLimit / rateEfficiency
-	requestIntervalDuration := time.Duration(requestInterval) * time.Millisecond
-	queueSpacing := time.Duration(requestInterval/float64(len(riot.RiotRegionRoutes)+len(riot.RiotRegionClusters))) * time.Millisecond
+	// create match
+	qtx.CreateMatch(ctx, db.CreateMatchParams{
+		ID:          matchDetails.MetaData.MatchId,
+		DataVersion: matchDetails.MetaData.DataVersion,
+		GameVersion: matchDetails.Info.GameVersion,
+		QueueID:     matchDetails.Info.QueueId,
+		GameType:    matchDetails.Info.GameType,
+		SetName:     matchDetails.Info.SetName,
+		SetNumber:   matchDetails.Info.SetNumber,
+	})
 
-	summonerCollectionRouter := make(map[string]*summonerCollection.RegionalSummonerCollectionQueue)
-	prioSummonerCollectionRouter := make(map[string]*summonerCollection.RegionalSummonerCollectionQueue)
-	for region := range riot.RiotRegionRoutes {
-		summonerCollectionQueue := summonerCollection.NewRegionalSummonerCollectionQueue(region)
-		summonerCollectionRouter[region] = summonerCollectionQueue
-		prioSummonerCollectionQueue := summonerCollection.NewRegionalSummonerCollectionQueue(region)
-		prioSummonerCollectionRouter[region] = prioSummonerCollectionQueue
-		go summonerCollection.SummonerCollectionLoop(prioSummonerCollectionQueue, summonerCollectionQueue, requestIntervalDuration)
-		time.Sleep(queueSpacing)
+	// create comps
+	for _, compDetails := range matchDetails.Info.Comps {
+		qtx.CreateComp(ctx, db.CreateCompParams{
+			MatchID:       matchDetails.MetaData.MatchId,
+			SummonerPuuid: compDetails.Puuid,
+			CompData:      types.CompData(compDetails),
+		})
 	}
 
-	matchCollectionRouter := make(map[string]*matchCollection.RegionalMatchCollectionQueue)
-	prioMatchCollectionRouter := make(map[string]*matchCollection.RegionalMatchCollectionQueue)
-	for regionalServer := range riot.RiotRegionClusters {
-		matchCollectionQueue := matchCollection.NewRegionalMatchCollectionQueue(regionalServer, summonerCollectionRouter)
-		matchCollectionRouter[regionalServer] = matchCollectionQueue
-		prioMatchCollectionQueue := matchCollection.NewRegionalMatchCollectionQueue(regionalServer, prioSummonerCollectionRouter)
-		prioMatchCollectionRouter[regionalServer] = prioMatchCollectionQueue
-		go matchCollection.MatchCollectionLoop(prioMatchCollectionQueue, matchCollectionQueue, requestIntervalDuration)
-		time.Sleep(queueSpacing)
-	}
-
-	go stats.AugmentStatsRefreshLoop(time.Hour)
-
-	api.Setup(prioSummonerCollectionRouter, prioMatchCollectionRouter)
-	api.Start()
+	tx.Commit(ctx)
 }
