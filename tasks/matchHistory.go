@@ -4,6 +4,7 @@ import (
 	"TheCollectorDG/db"
 	"TheCollectorDG/riot"
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -17,6 +18,10 @@ type MatchHistoryTask struct {
 	Queue   chan Task
 	Conn    *pgx.Conn
 	Queries *db.Queries
+}
+
+func (task MatchHistoryTask) Id() string {
+	return fmt.Sprintf("MatchHistoryTask-%v", task.Puuid)
 }
 
 func (task MatchHistoryTask) Exec(ctx context.Context) error {
@@ -48,8 +53,4 @@ func (task MatchHistoryTask) Exec(ctx context.Context) error {
 	}
 
 	return err
-}
-
-func (task MatchHistoryTask) Id() string {
-	return task.Puuid
 }

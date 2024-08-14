@@ -5,6 +5,7 @@ import (
 	"TheCollectorDG/riot"
 	"TheCollectorDG/types"
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/jackc/pgx/v5"
@@ -15,6 +16,10 @@ type MatchDetailsTask struct {
 	MatchId string
 	Conn    *pgx.Conn
 	Queries *db.Queries
+}
+
+func (task MatchDetailsTask) Id() string {
+	return fmt.Sprintf("MatchDetailsTask-%v", task.MatchId)
 }
 
 func (task MatchDetailsTask) Exec(ctx context.Context) error {
@@ -33,10 +38,6 @@ func (task MatchDetailsTask) Exec(ctx context.Context) error {
 	log.Printf("Stored match %v!\n", task.MatchId)
 
 	return err
-}
-
-func (task MatchDetailsTask) Id() string {
-	return task.MatchId
 }
 
 func storeMatchDetails(ctx context.Context, conn *pgx.Conn, queries *db.Queries, matchDetails *riot.Match) error {

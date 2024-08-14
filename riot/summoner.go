@@ -8,9 +8,9 @@ type RiotSummonerRes struct {
 	Puuid         string `json:"puuid"`
 	SummonerId    string `json:"id"`
 	AccountId     string `json:"accountId"`
-	ProfileIconId int    `json:"profileIconId"`
-	RevisionDate  int    `json:"revisionDate"`
-	SummonerLevel int    `json:"summonerLevel"`
+	ProfileIconId int32  `json:"profileIconId"`
+	RevisionDate  int32  `json:"revisionDate"`
+	SummonerLevel int32  `json:"summonerLevel"`
 }
 
 func GetSummonerByPuuid(region string, puuid string) (*RiotSummonerRes, error) {
