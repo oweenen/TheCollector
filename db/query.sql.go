@@ -145,6 +145,23 @@ func (q *Queries) SetMatchesUpdated(ctx context.Context, arg SetMatchesUpdatedPa
 	return err
 }
 
+const updateAccount = `-- name: UpdateAccount :exec
+UPDATE tft_summoner
+SET name = $2, tag = $3
+WHERE puuid = $1
+`
+
+type UpdateAccountParams struct {
+	Puuid string
+	Name  pgtype.Text
+	Tag   pgtype.Text
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
+	_, err := q.db.Exec(ctx, updateAccount, arg.Puuid, arg.Name, arg.Tag)
+	return err
+}
+
 const updateSummoner = `-- name: UpdateSummoner :exec
 UPDATE tft_summoner
 SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4

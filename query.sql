@@ -10,6 +10,11 @@ UPDATE tft_summoner
 SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4
 WHERE puuid = $1;
 
+-- name: UpdateAccount :exec
+UPDATE tft_summoner
+SET name = $2, tag = $3
+WHERE puuid = $1;
+
 -- name: CreateMatch :exec
 INSERT INTO tft_match (
     id,
