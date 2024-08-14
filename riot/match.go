@@ -64,11 +64,11 @@ func GetMatchDetails(cluster, matchId string) (*Match, error) {
 	return matchRes, err
 }
 
-func GetMatchHistory(cluster string, puuid string, after int64) ([]string, error) {
+func GetMatchHistory(cluster string, puuid string) ([]string, error) {
 	var history []string
 	count := 200
 
-	route := fmt.Sprintf("tft/match/v1/matches/by-puuid/%v/ids?startTime=%v&count=%v", puuid, after, count)
+	route := fmt.Sprintf("tft/match/v1/matches/by-puuid/%v/ids?count=%v", puuid, count)
 	err := getJson(cluster, route, &history)
 	return history, err
 }
