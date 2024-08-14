@@ -5,13 +5,14 @@
 package db
 
 import (
+	"TheCollectorDG/types"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type TftComp struct {
 	MatchID       string
 	SummonerPuuid string
-	CompData      []byte
+	CompData      types.CompData
 }
 
 type TftMatch struct {

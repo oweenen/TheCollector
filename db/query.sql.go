@@ -8,8 +8,30 @@ package db
 import (
 	"context"
 
+	"TheCollectorDG/types"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createComp = `-- name: CreateComp :exec
+INSERT INTO tft_comp (
+    match_id,
+	summoner_puuid,
+	comp_data
+) VALUES (
+    $1, $2, $3
+)
+`
+
+type CreateCompParams struct {
+	MatchID       string
+	SummonerPuuid string
+	CompData      types.CompData
+}
+
+func (q *Queries) CreateComp(ctx context.Context, arg CreateCompParams) error {
+	_, err := q.db.Exec(ctx, createComp, arg.MatchID, arg.SummonerPuuid, arg.CompData)
+	return err
+}
 
 const createMatch = `-- name: CreateMatch :exec
 INSERT INTO tft_match (
@@ -123,23 +145,25 @@ func (q *Queries) SetMatchesUpdated(ctx context.Context, arg SetMatchesUpdatedPa
 	return err
 }
 
-const _createComp = `-- name: _createComp :exec
-INSERT INTO tft_comp (
-    match_id,
-	summoner_puuid,
-	comp_data
-) VALUES (
-    $1, $2, $3
-)
+const updateSummoner = `-- name: UpdateSummoner :exec
+UPDATE tft_summoner
+SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4
+WHERE puuid = $1
 `
 
-type _createCompParams struct {
-	MatchID       string
-	SummonerPuuid string
-	CompData      []byte
+type UpdateSummonerParams struct {
+	Puuid         string
+	SummonerID    pgtype.Text
+	ProfileIconID pgtype.Int4
+	SummonerLevel pgtype.Int4
 }
 
-func (q *Queries) _createComp(ctx context.Context, arg _createCompParams) error {
-	_, err := q.db.Exec(ctx, _createComp, arg.MatchID, arg.SummonerPuuid, arg.CompData)
+func (q *Queries) UpdateSummoner(ctx context.Context, arg UpdateSummonerParams) error {
+	_, err := q.db.Exec(ctx, updateSummoner,
+		arg.Puuid,
+		arg.SummonerID,
+		arg.ProfileIconID,
+		arg.SummonerLevel,
+	)
 	return err
 }

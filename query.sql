@@ -5,6 +5,11 @@ INSERT INTO tft_summoner (
     $1
 ) ON CONFLICT (puuid) DO NOTHING;
 
+-- name: UpdateSummoner :exec
+UPDATE tft_summoner
+SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4
+WHERE puuid = $1;
+
 -- name: CreateMatch :exec
 INSERT INTO tft_match (
     id,
@@ -18,7 +23,7 @@ INSERT INTO tft_match (
     $1, $2, $3, $4, $5, $6, $7
 );
 
--- name: _createComp :exec
+-- name: CreateComp :exec
 INSERT INTO tft_comp (
     match_id,
 	summoner_puuid,

@@ -8,3 +8,8 @@ sql:
         package: "db"
         out: "db"
         sql_package: "pgx/v5"
+        overrides:
+          - column: "tft_comp.comp_data"
+            go_type:
+              import: "TheCollectorDG/types"
+              type: "CompData"
