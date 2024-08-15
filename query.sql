@@ -45,11 +45,11 @@ FROM tft_summoner
 ORDER BY matches_updated ASC NULLS FIRST
 LIMIT $1;
 
--- name: GetPuuidWithNullSummoner :many
+-- name: GetPuuidsWithNullSummoner :many
 SELECT
     puuid
 FROM tft_summoner
-WHERE summoner_id = NULL
+WHERE summoner_id IS NULL
 LIMIT $1;
 
 -- name: MatchExists :one

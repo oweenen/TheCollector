@@ -3,64 +3,32 @@ package main
 import (
 	"TheCollectorDG/db"
 	"TheCollectorDG/tasks"
+	"TheCollectorDG/workers"
 	"context"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
-var conn *pgx.Conn
-var queries *db.Queries
-
-func init() {
-	var err error
-
+func main() {
 	ctx := context.Background()
 
-	err = godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 	log.Println("Env variables loaded")
 
-	conn, err = pgx.Connect(ctx, os.Getenv("DB_URL"))
+	pool, err := pgxpool.New(ctx, os.Getenv("DB_URL"))
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Db connection successful")
 
-	queries = db.New(conn)
-}
+	queries := db.New(pool)
 
-func main() {
-	queue := make(chan tasks.Task, 1000)
-
-	worker(queue)
-}
-
-func worker(queue chan tasks.Task) {
-	for {
-		select {
-		case task := <-queue:
-			task.Exec(context.Background())
-		default:
-			spawnMatchHistoryTasks(queue)
-		}
-	}
-}
-
-func spawnMatchHistoryTasks(queue chan tasks.Task) {
-	rows, _ := queries.GetOldestMatchHistories(context.Background(), 1)
-
-	for _, row := range rows {
-		queue <- tasks.MatchHistoryTask{
-			Cluster: "americas",
-			Puuid:   row.Puuid,
-			Queue:   queue,
-			Conn:    conn,
-			Queries: queries,
-		}
-	}
+	go workers.ClusterWorker(pool, queries, make(chan tasks.Task, 1000))
+	workers.RegionWorker(pool, queries, make(chan tasks.Task, 1000))
 }

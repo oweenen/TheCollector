@@ -104,16 +104,16 @@ func (q *Queries) GetOldestMatchHistories(ctx context.Context, limit int32) ([]G
 	return items, nil
 }
 
-const getPuuidWithNullSummoner = `-- name: GetPuuidWithNullSummoner :many
+const getPuuidsWithNullSummoner = `-- name: GetPuuidsWithNullSummoner :many
 SELECT
     puuid
 FROM tft_summoner
-WHERE summoner_id = NULL
+WHERE summoner_id IS NULL
 LIMIT $1
 `
 
-func (q *Queries) GetPuuidWithNullSummoner(ctx context.Context, limit int32) ([]string, error) {
-	rows, err := q.db.Query(ctx, getPuuidWithNullSummoner, limit)
+func (q *Queries) GetPuuidsWithNullSummoner(ctx context.Context, limit int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, getPuuidsWithNullSummoner, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type MatchDetailsTask struct {
 	Cluster string
 	MatchId string
-	Conn    *pgx.Conn
+	Pool    *pgxpool.Pool
 	Queries *db.Queries
 }
 
@@ -33,14 +33,14 @@ func (task MatchDetailsTask) Exec(ctx context.Context) error {
 		return err
 	}
 
-	err = storeMatchDetails(ctx, task.Conn, task.Queries, res)
+	err = storeMatchDetails(ctx, task.Pool, task.Queries, res)
 
 	log.Printf("Stored match %v!\n", task.MatchId)
 
 	return err
 }
 
-func storeMatchDetails(ctx context.Context, conn *pgx.Conn, queries *db.Queries, matchDetails *riot.Match) error {
+func storeMatchDetails(ctx context.Context, pool *pgxpool.Pool, queries *db.Queries, matchDetails *riot.Match) error {
 	var err error
 
 	// insert participants
@@ -51,7 +51,7 @@ func storeMatchDetails(ctx context.Context, conn *pgx.Conn, queries *db.Queries,
 		}
 	}
 
-	tx, err := conn.Begin(ctx)
+	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -64,10 +64,10 @@ func storeMatchDetails(ctx context.Context, conn *pgx.Conn, queries *db.Queries,
 		ID:          matchDetails.MetaData.MatchId,
 		DataVersion: matchDetails.MetaData.DataVersion,
 		GameVersion: matchDetails.Info.GameVersion,
-		QueueID:     matchDetails.Info.QueueId,
+		QueueID:     int32(matchDetails.Info.QueueId),
 		GameType:    matchDetails.Info.GameType,
 		SetName:     matchDetails.Info.SetName,
-		SetNumber:   matchDetails.Info.SetNumber,
+		SetNumber:   int32(matchDetails.Info.SetNumber),
 	})
 	if err != nil {
 		return err

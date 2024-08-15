@@ -5,6 +5,7 @@ import (
 	"TheCollectorDG/riot"
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -32,14 +33,16 @@ func (task SummonerDetailsTask) Exec(ctx context.Context) error {
 			Valid:  true,
 		},
 		ProfileIconID: pgtype.Int4{
-			Int32: res.ProfileIconId,
+			Int32: int32(res.ProfileIconId),
 			Valid: true,
 		},
 		SummonerLevel: pgtype.Int4{
-			Int32: res.SummonerLevel,
+			Int32: int32(res.SummonerLevel),
 			Valid: true,
 		},
 	})
+
+	log.Printf("Summoner details collected for %v\n", task.Puuid)
 
 	return err
 }

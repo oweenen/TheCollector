@@ -11,9 +11,9 @@ type Rank struct {
 	Rank         string `json:"rank"`
 	SummonerId   string `json:"summonerId"`
 	SummonerName string `json:"summonerName"`
-	LeaguePoints int32  `json:"leaguePoints"`
-	Wins         int32  `json:"wins"`
-	Losses       int32  `json:"losses"`
+	LeaguePoints int    `json:"leaguePoints"`
+	Wins         int    `json:"wins"`
+	Losses       int    `json:"losses"`
 	Veteran      bool   `json:"veteran"`
 	Inactive     bool   `json:"inactive"`
 	FreshBlood   bool   `json:"freshBlood"`

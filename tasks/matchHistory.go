@@ -8,15 +8,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type MatchHistoryTask struct {
 	Cluster string
 	Puuid   string
 	Queue   chan Task
-	Conn    *pgx.Conn
+	Pool    *pgxpool.Pool
 	Queries *db.Queries
 }
 
@@ -47,7 +47,7 @@ func (task MatchHistoryTask) Exec(ctx context.Context) error {
 		task.Queue <- MatchDetailsTask{
 			Cluster: task.Cluster,
 			MatchId: matchId,
-			Conn:    task.Conn,
+			Pool:    task.Pool,
 			Queries: task.Queries,
 		}
 	}
