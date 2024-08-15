@@ -5,6 +5,7 @@ import (
 	"TheCollectorDG/riot"
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -36,6 +37,8 @@ func (task AccountDetailsTask) Exec(ctx context.Context) error {
 			Valid:  true,
 		},
 	})
+
+	log.Printf("Account details collected for %v\n", task.Puuid)
 
 	return err
 }

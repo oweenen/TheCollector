@@ -104,7 +104,35 @@ func (q *Queries) GetOldestMatchHistories(ctx context.Context, limit int32) ([]G
 	return items, nil
 }
 
-const getPuuidsWithNullSummoner = `-- name: GetPuuidsWithNullSummoner :many
+const getPuuidsWithNullAccountData = `-- name: GetPuuidsWithNullAccountData :many
+SELECT
+    puuid
+FROM tft_summoner
+WHERE name IS NULL OR tag IS NULL
+LIMIT $1
+`
+
+func (q *Queries) GetPuuidsWithNullAccountData(ctx context.Context, limit int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, getPuuidsWithNullAccountData, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var puuid string
+		if err := rows.Scan(&puuid); err != nil {
+			return nil, err
+		}
+		items = append(items, puuid)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPuuidsWithNullSummonerData = `-- name: GetPuuidsWithNullSummonerData :many
 SELECT
     puuid
 FROM tft_summoner
@@ -112,8 +140,8 @@ WHERE summoner_id IS NULL
 LIMIT $1
 `
 
-func (q *Queries) GetPuuidsWithNullSummoner(ctx context.Context, limit int32) ([]string, error) {
-	rows, err := q.db.Query(ctx, getPuuidsWithNullSummoner, limit)
+func (q *Queries) GetPuuidsWithNullSummonerData(ctx context.Context, limit int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, getPuuidsWithNullSummonerData, limit)
 	if err != nil {
 		return nil, err
 	}
