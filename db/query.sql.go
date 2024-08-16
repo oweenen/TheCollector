@@ -209,8 +209,8 @@ WHERE puuid = $1
 
 type UpdateAccountParams struct {
 	Puuid string
-	Name  pgtype.Text
-	Tag   pgtype.Text
+	Name  *string
+	Tag   *string
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
@@ -226,9 +226,9 @@ WHERE puuid = $1
 
 type UpdateSummonerParams struct {
 	Puuid         string
-	SummonerID    pgtype.Text
-	ProfileIconID pgtype.Int4
-	SummonerLevel pgtype.Int4
+	SummonerID    *string
+	ProfileIconID *int32
+	SummonerLevel *int32
 }
 
 func (q *Queries) UpdateSummoner(ctx context.Context, arg UpdateSummonerParams) error {

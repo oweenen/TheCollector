@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SummonerDetailsTask struct {
@@ -27,19 +25,10 @@ func (task SummonerDetailsTask) Exec(ctx context.Context) error {
 	}
 
 	err = task.Queries.UpdateSummoner(ctx, db.UpdateSummonerParams{
-		Puuid: task.Puuid,
-		SummonerID: pgtype.Text{
-			String: res.SummonerId,
-			Valid:  true,
-		},
-		ProfileIconID: pgtype.Int4{
-			Int32: int32(res.ProfileIconId),
-			Valid: true,
-		},
-		SummonerLevel: pgtype.Int4{
-			Int32: int32(res.SummonerLevel),
-			Valid: true,
-		},
+		Puuid:         task.Puuid,
+		SummonerID:    &res.SummonerId,
+		ProfileIconID: &res.ProfileIconId,
+		SummonerLevel: &res.SummonerLevel,
 	})
 
 	log.Printf("Summoner details collected for %v\n", task.Puuid)

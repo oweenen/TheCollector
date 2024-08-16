@@ -14,10 +14,10 @@ type Match struct {
 		Date        int64   `json:"game_datetime"`
 		Length      float64 `json:"game_length"`
 		GameVersion string  `json:"game_version"`
-		QueueId     int     `json:"queue_id"`
+		QueueId     int32   `json:"queue_id"`
 		GameType    string  `json:"tft_game_type"`
 		SetName     string  `json:"tft_set_core_name"`
-		SetNumber   int     `json:"tft_set_number"`
+		SetNumber   int32   `json:"tft_set_number"`
 		Comps       []Comp  `json:"participants"`
 	} `json:"info"`
 }
@@ -26,30 +26,30 @@ type Comp struct {
 	Augments  []string `json:"augments"`
 	Companion struct {
 		ContentId string `json:"content_ID"`
-		ItemId    int    `json:"item_ID"`
-		SkinId    int    `json:"skin_ID"`
+		ItemId    int32  `json:"item_ID"`
+		SkinId    int32  `json:"skin_ID"`
 		Species   string `json:"species"`
 	} `json:"companion"`
-	RemainingGold     int     `json:"gold_left"`
-	LastRound         int     `json:"last_round"`
-	Level             int     `json:"level"`
-	Placement         int     `json:"placement"`
-	PlayersEliminated int     `json:"players_eliminated"`
+	RemainingGold     int32   `json:"gold_left"`
+	LastRound         int32   `json:"last_round"`
+	Level             int32   `json:"level"`
+	Placement         int32   `json:"placement"`
+	PlayersEliminated int32   `json:"players_eliminated"`
 	Puuid             string  `json:"puuid"`
 	TimeEliminated    float64 `json:"time_eliminated"`
-	DamageToPlayers   int     `json:"total_damage_to_players"`
+	DamageToPlayers   int32   `json:"total_damage_to_players"`
 	Traits            []struct {
 		Name       string `json:"name"`
-		NumUnits   int    `json:"num_units"`
-		Style      int    `json:"style"`
-		TierActive int    `json:"tier_current"`
-		TierMax    int    `json:"tier_total"`
+		NumUnits   int32  `json:"num_units"`
+		Style      int32  `json:"style"`
+		TierActive int32  `json:"tier_current"`
+		TierMax    int32  `json:"tier_total"`
 	} `json:"traits"`
 	Units []struct {
 		CharacterId string   `json:"character_id"`
 		ItemNames   []string `json:"itemNames"`
-		Rarity      int      `json:"rarity"`
-		Tier        int      `json:"tier"`
+		Rarity      int32    `json:"rarity"`
+		Tier        int32    `json:"tier"`
 	} `json:"units"`
 }
 

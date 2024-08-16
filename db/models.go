@@ -27,10 +27,10 @@ type TftMatch struct {
 
 type TftSummoner struct {
 	Puuid          string
-	Name           pgtype.Text
-	Tag            pgtype.Text
-	SummonerID     pgtype.Text
-	ProfileIconID  pgtype.Int4
-	SummonerLevel  pgtype.Int4
+	Name           *string
+	Tag            *string
+	SummonerID     *string
+	ProfileIconID  *int32
+	SummonerLevel  *int32
 	MatchesUpdated pgtype.Timestamp
 }

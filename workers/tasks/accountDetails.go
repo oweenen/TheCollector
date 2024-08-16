@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AccountDetailsTask struct {
@@ -28,14 +26,8 @@ func (task AccountDetailsTask) Exec(ctx context.Context) error {
 
 	err = task.Queries.UpdateAccount(ctx, db.UpdateAccountParams{
 		Puuid: task.Puuid,
-		Name: pgtype.Text{
-			String: res.Name,
-			Valid:  true,
-		},
-		Tag: pgtype.Text{
-			String: res.Tag,
-			Valid:  true,
-		},
+		Name:  &res.Name,
+		Tag:   &res.Tag,
 	})
 
 	log.Printf("Account details collected for %v\n", task.Puuid)

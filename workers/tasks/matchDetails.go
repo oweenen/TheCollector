@@ -64,10 +64,10 @@ func storeMatchDetails(ctx context.Context, pool *pgxpool.Pool, queries *db.Quer
 		ID:          matchDetails.MetaData.MatchId,
 		DataVersion: matchDetails.MetaData.DataVersion,
 		GameVersion: matchDetails.Info.GameVersion,
-		QueueID:     int32(matchDetails.Info.QueueId),
+		QueueID:     matchDetails.Info.QueueId,
 		GameType:    matchDetails.Info.GameType,
 		SetName:     matchDetails.Info.SetName,
-		SetNumber:   int32(matchDetails.Info.SetNumber),
+		SetNumber:   matchDetails.Info.SetNumber,
 	})
 	if err != nil {
 		return err

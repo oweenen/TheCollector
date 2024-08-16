@@ -4,29 +4,29 @@ type CompData struct {
 	Augments  []string `json:"augments"`
 	Companion struct {
 		ContentId string `json:"contentId"`
-		ItemId    int    `json:"itemId"`
-		SkinId    int    `json:"skinId"`
+		ItemId    int32  `json:"itemId"`
+		SkinId    int32  `json:"skinId"`
 		Species   string `json:"species"`
 	} `json:"companion"`
-	RemainingGold     int     `json:"goldLeft"`
-	LastRound         int     `json:"lastRound"`
-	Level             int     `json:"level"`
-	Placement         int     `json:"placement"`
-	PlayersEliminated int     `json:"playersEliminated"`
+	RemainingGold     int32   `json:"goldLeft"`
+	LastRound         int32   `json:"lastRound"`
+	Level             int32   `json:"level"`
+	Placement         int32   `json:"placement"`
+	PlayersEliminated int32   `json:"playersEliminated"`
 	Puuid             string  `json:"puuid"`
 	TimeEliminated    float64 `json:"timeEliminated"`
-	DamageToPlayers   int     `json:"totalDamageToPlayers"`
+	DamageToPlayers   int32   `json:"totalDamageToPlayers"`
 	Traits            []struct {
 		Name       string `json:"name"`
-		NumUnits   int    `json:"numUnits"`
-		Style      int    `json:"style"`
-		TierActive int    `json:"tierRurrent"`
-		TierMax    int    `json:"tierTotal"`
+		NumUnits   int32  `json:"numUnits"`
+		Style      int32  `json:"style"`
+		TierActive int32  `json:"tierRurrent"`
+		TierMax    int32  `json:"tierTotal"`
 	} `json:"traits"`
 	Units []struct {
 		CharacterId string   `json:"characterId"`
 		ItemNames   []string `json:"itemNames"`
-		Rarity      int      `json:"rarity"`
-		Tier        int      `json:"tier"`
+		Rarity      int32    `json:"rarity"`
+		Tier        int32    `json:"tier"`
 	} `json:"units"`
 }
