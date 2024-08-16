@@ -26,8 +26,8 @@ func (task AccountDetailsTask) Exec(ctx context.Context) error {
 
 	err = task.Queries.UpdateAccount(ctx, db.UpdateAccountParams{
 		Puuid: task.Puuid,
-		Name:  &res.Name,
-		Tag:   &res.Tag,
+		Name:  res.Name,
+		Tag:   res.Tag,
 	})
 
 	log.Printf("Account details collected for %v\n", task.Puuid)

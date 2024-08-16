@@ -26,9 +26,9 @@ func (task SummonerDetailsTask) Exec(ctx context.Context) error {
 
 	err = task.Queries.UpdateSummoner(ctx, db.UpdateSummonerParams{
 		Puuid:         task.Puuid,
-		SummonerID:    &res.SummonerId,
-		ProfileIconID: &res.ProfileIconId,
-		SummonerLevel: &res.SummonerLevel,
+		SummonerID:    res.SummonerId,
+		ProfileIconID: res.ProfileIconId,
+		SummonerLevel: res.SummonerLevel,
 	})
 
 	log.Printf("Summoner details collected for %v\n", task.Puuid)

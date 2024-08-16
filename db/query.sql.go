@@ -23,9 +23,9 @@ INSERT INTO tft_comp (
 `
 
 type CreateCompParams struct {
-	MatchID       string
-	SummonerPuuid string
-	CompData      types.CompData
+	MatchID       string         `json:"matchId"`
+	SummonerPuuid string         `json:"summonerPuuid"`
+	CompData      types.CompData `json:"compData"`
 }
 
 func (q *Queries) CreateComp(ctx context.Context, arg CreateCompParams) error {
@@ -48,13 +48,13 @@ INSERT INTO tft_match (
 `
 
 type CreateMatchParams struct {
-	ID          string
-	DataVersion string
-	GameVersion string
-	QueueID     int32
-	GameType    string
-	SetName     string
-	SetNumber   int32
+	ID          string `json:"id"`
+	DataVersion string `json:"dataVersion"`
+	GameVersion string `json:"gameVersion"`
+	QueueID     int32  `json:"queueId"`
+	GameType    string `json:"gameType"`
+	SetName     string `json:"setName"`
+	SetNumber   int32  `json:"setNumber"`
 }
 
 func (q *Queries) CreateMatch(ctx context.Context, arg CreateMatchParams) error {
@@ -80,8 +80,8 @@ LIMIT $1
 `
 
 type GetOldestMatchHistoriesRow struct {
-	Puuid                     string
-	BackgroundUpdateTimestamp pgtype.Timestamp
+	Puuid                     string           `json:"puuid"`
+	BackgroundUpdateTimestamp pgtype.Timestamp `json:"backgroundUpdateTimestamp"`
 }
 
 func (q *Queries) GetOldestMatchHistories(ctx context.Context, limit int32) ([]GetOldestMatchHistoriesRow, error) {
@@ -207,13 +207,14 @@ func (q *Queries) MatchExists(ctx context.Context, id string) (bool, error) {
 }
 
 const setBackgroundUpdateTimestamp = `-- name: SetBackgroundUpdateTimestamp :exec
-UPDATE tft_summoner SET background_update_timestamp = $2
+UPDATE tft_summoner
+SET background_update_timestamp = $2::TIMESTAMP
 WHERE puuid = $1
 `
 
 type SetBackgroundUpdateTimestampParams struct {
-	Puuid                     string
-	BackgroundUpdateTimestamp pgtype.Timestamp
+	Puuid                     string           `json:"puuid"`
+	BackgroundUpdateTimestamp pgtype.Timestamp `json:"backgroundUpdateTimestamp"`
 }
 
 func (q *Queries) SetBackgroundUpdateTimestamp(ctx context.Context, arg SetBackgroundUpdateTimestampParams) error {
@@ -223,14 +224,15 @@ func (q *Queries) SetBackgroundUpdateTimestamp(ctx context.Context, arg SetBackg
 
 const updateAccount = `-- name: UpdateAccount :exec
 UPDATE tft_summoner
-SET name = $2, tag = $3
+SET name = $2::VARCHAR,
+    tag = $3::VARCHAR
 WHERE puuid = $1
 `
 
 type UpdateAccountParams struct {
-	Puuid string
-	Name  *string
-	Tag   *string
+	Puuid string `json:"puuid"`
+	Name  string `json:"name"`
+	Tag   string `json:"tag"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
@@ -240,15 +242,17 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) er
 
 const updateSummoner = `-- name: UpdateSummoner :exec
 UPDATE tft_summoner
-SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4
+SET summoner_id = $2::VARCHAR,
+    profile_icon_id = $3::INT,
+    summoner_level = $4::INT
 WHERE puuid = $1
 `
 
 type UpdateSummonerParams struct {
-	Puuid         string
-	SummonerID    *string
-	ProfileIconID *int32
-	SummonerLevel *int32
+	Puuid         string `json:"puuid"`
+	SummonerID    string `json:"summonerId"`
+	ProfileIconID int32  `json:"profileIconId"`
+	SummonerLevel int32  `json:"summonerLevel"`
 }
 
 func (q *Queries) UpdateSummoner(ctx context.Context, arg UpdateSummonerParams) error {

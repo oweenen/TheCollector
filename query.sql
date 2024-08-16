@@ -7,12 +7,15 @@ INSERT INTO tft_summoner (
 
 -- name: UpdateSummoner :exec
 UPDATE tft_summoner
-SET summoner_id = $2, profile_icon_id = $3, summoner_level = $4
+SET summoner_id = @summoner_id::VARCHAR,
+    profile_icon_id = @profile_icon_id::INT,
+    summoner_level = @summoner_level::INT
 WHERE puuid = $1;
 
 -- name: UpdateAccount :exec
 UPDATE tft_summoner
-SET name = $2, tag = $3
+SET name = @name::VARCHAR,
+    tag = @tag::VARCHAR
 WHERE puuid = $1;
 
 -- name: CreateMatch :exec
@@ -65,7 +68,8 @@ SELECT EXISTS (
 );
 
 -- name: SetBackgroundUpdateTimestamp :exec
-UPDATE tft_summoner SET background_update_timestamp = $2
+UPDATE tft_summoner
+SET background_update_timestamp = @background_update_timestamp::TIMESTAMP
 WHERE puuid = $1;
 
 -- name: GetSummonerByPuuid :one
