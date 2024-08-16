@@ -12,7 +12,7 @@ import (
 )
 
 func (env WorkerEnv) ClusterWorker(queue chan workerManager.Task) {
-	backoffTicker := time.NewTicker(time.Second * 10)
+	backoffTicker := time.NewTicker(BACKOFF_TIME)
 
 	for {
 		select {
@@ -27,14 +27,16 @@ func (env WorkerEnv) ClusterWorker(queue chan workerManager.Task) {
 
 		select {
 		case <-backoffTicker.C:
-			spawnAccountDetailsTasks(env.Pool, env.Queries, queue)
-			spawnMatchHistoryTasks(env.Pool, env.Queries, queue)
+			numSpawned := spawnAccountDetailsTasks(env.Pool, env.Queries, queue)
+			if numSpawned == 0 {
+				spawnMatchHistoryTasks(env.Pool, env.Queries, queue)
+			}
 		default:
 		}
 	}
 }
 
-func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) {
+func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	rows, _ := queries.GetOldestMatchHistories(context.Background(), 1)
 
 	for _, row := range rows {
@@ -46,9 +48,11 @@ func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan 
 			Queries: queries,
 		}
 	}
+
+	return len(rows)
 }
 
-func spawnAccountDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) {
+func spawnAccountDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	puuids, _ := queries.GetPuuidsWithNullAccountData(context.Background(), 100)
 	for _, puuid := range puuids {
 		queue <- tasks.AccountDetailsTask{
@@ -57,4 +61,6 @@ func spawnAccountDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue cha
 			Queries: queries,
 		}
 	}
+
+	return len(puuids)
 }

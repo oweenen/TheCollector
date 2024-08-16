@@ -13,7 +13,7 @@ import (
 )
 
 func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
-	backoffTicker := time.NewTicker(time.Second * 10)
+	backoffTicker := time.NewTicker(BACKOFF_TIME)
 
 	for {
 		select {
@@ -35,7 +35,7 @@ func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
 	}
 }
 
-func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) {
+func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	puuids, _ := queries.GetPuuidsWithNullSummonerData(context.Background(), 100)
 	for _, puuid := range puuids {
 		queue <- tasks.SummonerDetailsTask{
@@ -44,4 +44,6 @@ func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue ch
 			Queries: queries,
 		}
 	}
+
+	return len(puuids)
 }
