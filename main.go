@@ -2,8 +2,9 @@ package main
 
 import (
 	"TheCollectorDG/db"
-	"TheCollectorDG/tasks"
+	"TheCollectorDG/workerManager"
 	"TheCollectorDG/workers"
+
 	"context"
 	"log"
 	"os"
@@ -29,6 +30,15 @@ func main() {
 
 	queries := db.New(pool)
 
-	go workers.ClusterWorker(pool, queries, make(chan tasks.Task, 1000))
-	workers.RegionWorker(pool, queries, make(chan tasks.Task, 1000))
+	workerEnv := workers.WorkerEnv{
+		Pool:    pool,
+		Queries: queries,
+	}
+
+	workerManager := workerManager.New()
+	workerManager.AddWorker("na1", workerEnv.RegionWorker)
+	workerManager.AddWorker("americas", workerEnv.ClusterWorker)
+
+	// block main thread
+	select {}
 }

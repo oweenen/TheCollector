@@ -2,7 +2,9 @@ package workers
 
 import (
 	"TheCollectorDG/db"
-	"TheCollectorDG/tasks"
+	"TheCollectorDG/workerManager"
+	"TheCollectorDG/workers/tasks"
+
 	"context"
 	"log"
 	"time"
@@ -10,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func RegionWorker(pool *pgxpool.Pool, queries *db.Queries, queue chan tasks.Task) {
+func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
 	backoffTicker := time.NewTicker(time.Second * 10)
 
 	for {
@@ -27,13 +29,13 @@ func RegionWorker(pool *pgxpool.Pool, queries *db.Queries, queue chan tasks.Task
 
 		select {
 		case <-backoffTicker.C:
-			spawnSummonerDetailsTasks(pool, queries, queue)
+			spawnSummonerDetailsTasks(env.Pool, env.Queries, queue)
 		default:
 		}
 	}
 }
 
-func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan tasks.Task) {
+func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) {
 	puuids, _ := queries.GetPuuidsWithNullSummonerData(context.Background(), 100)
 	for _, puuid := range puuids {
 		queue <- tasks.SummonerDetailsTask{

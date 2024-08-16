@@ -3,6 +3,7 @@ package tasks
 import (
 	"TheCollectorDG/db"
 	"TheCollectorDG/riot"
+	"TheCollectorDG/workerManager"
 	"context"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ import (
 type MatchHistoryTask struct {
 	Cluster string
 	Puuid   string
-	Queue   chan Task
+	Queue   chan workerManager.Task
 	Pool    *pgxpool.Pool
 	Queries *db.Queries
 }
