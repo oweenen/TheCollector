@@ -73,15 +73,15 @@ func (q *Queries) CreateMatch(ctx context.Context, arg CreateMatchParams) error 
 const getOldestMatchHistories = `-- name: GetOldestMatchHistories :many
 SELECT
     puuid,
-    matches_updated
+    background_update_timestamp
 FROM tft_summoner
-ORDER BY matches_updated ASC NULLS FIRST
+ORDER BY background_update_timestamp ASC NULLS FIRST
 LIMIT $1
 `
 
 type GetOldestMatchHistoriesRow struct {
-	Puuid          string
-	MatchesUpdated pgtype.Timestamp
+	Puuid                     string
+	BackgroundUpdateTimestamp pgtype.Timestamp
 }
 
 func (q *Queries) GetOldestMatchHistories(ctx context.Context, limit int32) ([]GetOldestMatchHistoriesRow, error) {
@@ -93,7 +93,7 @@ func (q *Queries) GetOldestMatchHistories(ctx context.Context, limit int32) ([]G
 	var items []GetOldestMatchHistoriesRow
 	for rows.Next() {
 		var i GetOldestMatchHistoriesRow
-		if err := rows.Scan(&i.Puuid, &i.MatchesUpdated); err != nil {
+		if err := rows.Scan(&i.Puuid, &i.BackgroundUpdateTimestamp); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -186,18 +186,18 @@ func (q *Queries) MatchExists(ctx context.Context, id string) (bool, error) {
 	return exists, err
 }
 
-const setMatchesUpdated = `-- name: SetMatchesUpdated :exec
-UPDATE tft_summoner SET matches_updated = $2
+const setBackgroundUpdateTimestamp = `-- name: SetBackgroundUpdateTimestamp :exec
+UPDATE tft_summoner SET background_update_timestamp = $2
 WHERE puuid = $1
 `
 
-type SetMatchesUpdatedParams struct {
-	Puuid          string
-	MatchesUpdated pgtype.Timestamp
+type SetBackgroundUpdateTimestampParams struct {
+	Puuid                     string
+	BackgroundUpdateTimestamp pgtype.Timestamp
 }
 
-func (q *Queries) SetMatchesUpdated(ctx context.Context, arg SetMatchesUpdatedParams) error {
-	_, err := q.db.Exec(ctx, setMatchesUpdated, arg.Puuid, arg.MatchesUpdated)
+func (q *Queries) SetBackgroundUpdateTimestamp(ctx context.Context, arg SetBackgroundUpdateTimestampParams) error {
+	_, err := q.db.Exec(ctx, setBackgroundUpdateTimestamp, arg.Puuid, arg.BackgroundUpdateTimestamp)
 	return err
 }
 

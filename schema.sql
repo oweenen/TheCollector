@@ -15,7 +15,8 @@ CREATE TABLE tft_summoner (
 	summoner_id VARCHAR,
 	profile_icon_id INT,
 	summoner_level INT,
-	matches_updated TIMESTAMP NOT NULL
+	full_update_timestamp TIMESTAMP,
+	background_update_timestamp TIMESTAMP
 );
 
 CREATE TABLE tft_comp (

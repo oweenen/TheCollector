@@ -33,9 +33,9 @@ func (task MatchHistoryTask) Exec(ctx context.Context) error {
 		return err
 	}
 
-	task.Queries.SetMatchesUpdated(ctx, db.SetMatchesUpdatedParams{
+	task.Queries.SetBackgroundUpdateTimestamp(ctx, db.SetBackgroundUpdateTimestampParams{
 		Puuid: task.Puuid,
-		MatchesUpdated: pgtype.Timestamp{
+		BackgroundUpdateTimestamp: pgtype.Timestamp{
 			Time:  updatedAt,
 			Valid: true,
 		},

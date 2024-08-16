@@ -40,9 +40,9 @@ INSERT INTO tft_comp (
 -- name: GetOldestMatchHistories :many
 SELECT
     puuid,
-    matches_updated
+    background_update_timestamp
 FROM tft_summoner
-ORDER BY matches_updated ASC NULLS FIRST
+ORDER BY background_update_timestamp ASC NULLS FIRST
 LIMIT $1;
 
 -- name: GetPuuidsWithNullSummonerData :many
@@ -64,6 +64,6 @@ SELECT EXISTS (
     SELECT * FROM tft_match WHERE id = $1
 );
 
--- name: SetMatchesUpdated :exec
-UPDATE tft_summoner SET matches_updated = $2
+-- name: SetBackgroundUpdateTimestamp :exec
+UPDATE tft_summoner SET background_update_timestamp = $2
 WHERE puuid = $1;
