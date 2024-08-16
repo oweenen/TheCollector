@@ -1,9 +1,11 @@
 package main
 
 import (
+	"TheCollectorDG/api"
 	"TheCollectorDG/db"
 	"TheCollectorDG/workerManager"
 	"TheCollectorDG/workers"
+	"net/http"
 
 	"context"
 	"log"
@@ -39,6 +41,8 @@ func main() {
 	workerManager.AddWorker("na1", workerEnv.RegionWorker)
 	workerManager.AddWorker("americas", workerEnv.ClusterWorker)
 
-	// block main thread
-	select {}
+	apiEnv := api.ApiEnv{
+		Queries: queries,
+	}
+	http.ListenAndServe(":8080", apiEnv.New())
 }

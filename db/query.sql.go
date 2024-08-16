@@ -160,6 +160,26 @@ func (q *Queries) GetPuuidsWithNullSummonerData(ctx context.Context, limit int32
 	return items, nil
 }
 
+const getSummonerByPuuid = `-- name: GetSummonerByPuuid :one
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp FROM tft_summoner WHERE puuid = $1
+`
+
+func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (TftSummoner, error) {
+	row := q.db.QueryRow(ctx, getSummonerByPuuid, puuid)
+	var i TftSummoner
+	err := row.Scan(
+		&i.Puuid,
+		&i.Name,
+		&i.Tag,
+		&i.SummonerID,
+		&i.ProfileIconID,
+		&i.SummonerLevel,
+		&i.FullUpdateTimestamp,
+		&i.BackgroundUpdateTimestamp,
+	)
+	return i, err
+}
+
 const insertPuuid = `-- name: InsertPuuid :exec
 INSERT INTO tft_summoner (
     puuid

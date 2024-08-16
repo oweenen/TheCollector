@@ -67,3 +67,6 @@ SELECT EXISTS (
 -- name: SetBackgroundUpdateTimestamp :exec
 UPDATE tft_summoner SET background_update_timestamp = $2
 WHERE puuid = $1;
+
+-- name: GetSummonerByPuuid :one
+SELECT * FROM tft_summoner WHERE puuid = $1;
