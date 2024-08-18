@@ -16,7 +16,8 @@ CREATE TABLE tft_summoner (
 	profile_icon_id INT,
 	summoner_level INT,
 	full_update_timestamp TIMESTAMP,
-	background_update_timestamp TIMESTAMP
+	background_update_timestamp TIMESTAMP,
+	skip_account BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE tft_comp (

@@ -59,8 +59,13 @@ LIMIT $1;
 SELECT
     puuid
 FROM tft_summoner
-WHERE name IS NULL OR tag IS NULL
+WHERE (name IS NULL OR tag IS NULL) AND NOT skip_account
 LIMIT $1;
+
+-- name: SetSkipAccountFlag :exec
+UPDATE tft_summoner
+SET skip_account = $2
+WHERE puuid = $1;
 
 -- name: MatchExists :one
 SELECT EXISTS (

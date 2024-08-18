@@ -37,11 +37,15 @@ func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
 
 func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	puuids, _ := queries.GetPuuidsWithNullSummonerData(context.Background(), 100)
-	for _, puuid := range puuids {
-		queue <- tasks.SummonerDetailsTask{
+	for i, puuid := range puuids {
+		select {
+		case queue <- tasks.SummonerDetailsTask{
 			Puuid:   puuid,
 			Region:  "na1",
 			Queries: queries,
+		}:
+		default:
+			return i + 1
 		}
 	}
 

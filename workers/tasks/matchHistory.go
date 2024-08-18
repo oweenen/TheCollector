@@ -14,11 +14,12 @@ import (
 )
 
 type MatchHistoryTask struct {
-	Cluster string
-	Puuid   string
-	Queue   chan workerManager.Task
-	Pool    *pgxpool.Pool
-	Queries *db.Queries
+	Cluster      string
+	Puuid        string
+	Queue        chan workerManager.Task
+	MatchesAfter time.Time
+	Pool         *pgxpool.Pool
+	Queries      *db.Queries
 }
 
 func (task MatchHistoryTask) Id() string {
@@ -28,7 +29,7 @@ func (task MatchHistoryTask) Id() string {
 func (task MatchHistoryTask) Exec(ctx context.Context) error {
 	updatedAt := time.Now()
 
-	res, err := riot.GetMatchHistory(task.Cluster, task.Puuid)
+	res, err := riot.GetMatchHistory(task.Cluster, task.Puuid, task.MatchesAfter)
 	if err != nil {
 		return err
 	}

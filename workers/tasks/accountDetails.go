@@ -4,6 +4,7 @@ import (
 	"TheCollectorDG/db"
 	"TheCollectorDG/riot"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 )
@@ -20,6 +21,13 @@ func (task AccountDetailsTask) Id() string {
 
 func (task AccountDetailsTask) Exec(ctx context.Context) error {
 	res, err := riot.GetAccountByPuuid(task.Cluster, task.Puuid)
+	if errors.Is(err, riot.NotFoundError) {
+		err = task.Queries.SetSkipAccountFlag(ctx, db.SetSkipAccountFlagParams{
+			Puuid:       task.Puuid,
+			SkipAccount: true,
+		})
+		return err
+	}
 	if err != nil {
 		return err
 	}

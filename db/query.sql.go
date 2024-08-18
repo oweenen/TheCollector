@@ -108,7 +108,7 @@ const getPuuidsWithNullAccountData = `-- name: GetPuuidsWithNullAccountData :man
 SELECT
     puuid
 FROM tft_summoner
-WHERE name IS NULL OR tag IS NULL
+WHERE (name IS NULL OR tag IS NULL) AND NOT skip_account
 LIMIT $1
 `
 
@@ -161,7 +161,7 @@ func (q *Queries) GetPuuidsWithNullSummonerData(ctx context.Context, limit int32
 }
 
 const getSummonerByPuuid = `-- name: GetSummonerByPuuid :one
-SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp FROM tft_summoner WHERE puuid = $1
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp, skip_account FROM tft_summoner WHERE puuid = $1
 `
 
 func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (TftSummoner, error) {
@@ -176,6 +176,7 @@ func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (TftSumm
 		&i.SummonerLevel,
 		&i.FullUpdateTimestamp,
 		&i.BackgroundUpdateTimestamp,
+		&i.SkipAccount,
 	)
 	return i, err
 }
@@ -219,6 +220,22 @@ type SetBackgroundUpdateTimestampParams struct {
 
 func (q *Queries) SetBackgroundUpdateTimestamp(ctx context.Context, arg SetBackgroundUpdateTimestampParams) error {
 	_, err := q.db.Exec(ctx, setBackgroundUpdateTimestamp, arg.Puuid, arg.BackgroundUpdateTimestamp)
+	return err
+}
+
+const setSkipAccountFlag = `-- name: SetSkipAccountFlag :exec
+UPDATE tft_summoner
+SET skip_account = $2
+WHERE puuid = $1
+`
+
+type SetSkipAccountFlagParams struct {
+	Puuid       string `json:"puuid"`
+	SkipAccount bool   `json:"skipAccount"`
+}
+
+func (q *Queries) SetSkipAccountFlag(ctx context.Context, arg SetSkipAccountFlagParams) error {
+	_, err := q.db.Exec(ctx, setSkipAccountFlag, arg.Puuid, arg.SkipAccount)
 	return err
 }
 

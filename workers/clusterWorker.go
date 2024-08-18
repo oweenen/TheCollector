@@ -39,13 +39,18 @@ func (env WorkerEnv) ClusterWorker(queue chan workerManager.Task) {
 func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	rows, _ := queries.GetOldestMatchHistories(context.Background(), 1)
 
-	for _, row := range rows {
-		queue <- tasks.MatchHistoryTask{
-			Cluster: "americas",
-			Puuid:   row.Puuid,
-			Queue:   queue,
-			Pool:    pool,
-			Queries: queries,
+	for i, row := range rows {
+		select {
+		case queue <- tasks.MatchHistoryTask{
+			Cluster:      "americas",
+			Puuid:        row.Puuid,
+			Queue:        queue,
+			Pool:         pool,
+			Queries:      queries,
+			MatchesAfter: time.Now().Add(-time.Hour * 24 * 3),
+		}:
+		default:
+			return i + 1
 		}
 	}
 
@@ -54,11 +59,15 @@ func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan 
 
 func spawnAccountDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
 	puuids, _ := queries.GetPuuidsWithNullAccountData(context.Background(), 100)
-	for _, puuid := range puuids {
-		queue <- tasks.AccountDetailsTask{
+	for i, puuid := range puuids {
+		select {
+		case queue <- tasks.AccountDetailsTask{
 			Puuid:   puuid,
 			Cluster: "americas",
 			Queries: queries,
+		}:
+		default:
+			return i + 1
 		}
 	}
 
