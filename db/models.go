@@ -5,31 +5,34 @@
 package db
 
 import (
+	"TheCollectorDG/types"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type TftComp struct {
-	MatchID       string
-	SummonerPuuid string
-	CompData      []byte
+	MatchID       string         `json:"matchId"`
+	SummonerPuuid string         `json:"summonerPuuid"`
+	CompData      types.CompData `json:"compData"`
 }
 
 type TftMatch struct {
-	ID          string
-	DataVersion string
-	GameVersion string
-	QueueID     int32
-	GameType    string
-	SetName     string
-	SetNumber   int32
+	ID          string `json:"id"`
+	DataVersion string `json:"dataVersion"`
+	GameVersion string `json:"gameVersion"`
+	QueueID     int32  `json:"queueId"`
+	GameType    string `json:"gameType"`
+	SetName     string `json:"setName"`
+	SetNumber   int32  `json:"setNumber"`
 }
 
 type TftSummoner struct {
-	Puuid          string
-	Name           pgtype.Text
-	Tag            pgtype.Text
-	SummonerID     pgtype.Text
-	ProfileIconID  pgtype.Int4
-	SummonerLevel  pgtype.Int4
-	MatchesUpdated pgtype.Timestamp
+	Puuid                     string           `json:"puuid"`
+	Name                      pgtype.Text      `json:"name"`
+	Tag                       pgtype.Text      `json:"tag"`
+	SummonerID                pgtype.Text      `json:"summonerId"`
+	ProfileIconID             pgtype.Int4      `json:"profileIconId"`
+	SummonerLevel             pgtype.Int4      `json:"summonerLevel"`
+	FullUpdateTimestamp       pgtype.Timestamp `json:"fullUpdateTimestamp"`
+	BackgroundUpdateTimestamp pgtype.Timestamp `json:"backgroundUpdateTimestamp"`
+	SkipAccount               bool             `json:"skipAccount"`
 }

@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+var NotFoundError = errors.New("404 Not Found")
+
 func getJson(server string, route string, target interface{}) error {
 	url := fmt.Sprintf("https://%v.api.riotgames.com/%v", server, route)
 
@@ -26,7 +28,9 @@ func getJson(server string, route string, target interface{}) error {
 	}
 
 	defer res.Body.Close()
-
+	if res.StatusCode == http.StatusNotFound {
+		return NotFoundError
+	}
 	if res.StatusCode != http.StatusOK {
 		return errors.New(res.Status)
 	}
