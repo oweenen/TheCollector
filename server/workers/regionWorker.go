@@ -12,10 +12,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
+func (env WorkerEnv) RegionWorker(prioQueue chan workerManager.Task) {
 	backoffTicker := time.NewTicker(BACKOFF_TIME)
+	queue := make(chan workerManager.Task, 1000)
 
 	for {
+		select {
+		case task := <-prioQueue:
+			err := task.Exec(context.Background())
+			if err != nil {
+				log.Println(err.Error())
+			}
+			continue
+		default:
+		}
+
 		select {
 		case task := <-queue:
 			err := task.Exec(context.Background())
@@ -24,7 +35,6 @@ func (env WorkerEnv) RegionWorker(queue chan workerManager.Task) {
 			}
 			continue
 		default:
-
 		}
 
 		select {

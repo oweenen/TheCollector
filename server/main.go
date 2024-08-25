@@ -42,7 +42,8 @@ func main() {
 	workerManager.AddWorker("americas", workerEnv.ClusterWorker)
 
 	apiEnv := api.ApiEnv{
-		Queries: queries,
+		WorkerManager: workerManager,
+		Queries:       queries,
 	}
 	http.ListenAndServe(":8080", apiEnv.New())
 }

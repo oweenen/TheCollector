@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-const QUEUE_BUFFER_LENGTH = 1000
-
 type Manager struct {
 	queueMap map[string]chan Task
 }
@@ -21,7 +19,7 @@ func (m *Manager) AddWorker(workerId string, workerFn func(chan Task)) error {
 		return fmt.Errorf("failed to add worker: worker with id '%v' already exists", workerId)
 	}
 
-	q := make(chan Task, QUEUE_BUFFER_LENGTH)
+	q := make(chan Task, 1000)
 	m.queueMap[workerId] = q
 
 	go workerFn(q)
@@ -38,4 +36,17 @@ func (m *Manager) AssignTask(workerId string, task Task) error {
 	q <- task
 
 	return nil
+}
+
+func (m *Manager) AssignTaskWithDone(workerId string, task Task) (chan error, error) {
+	done := make(chan error)
+
+	twd := TaskWithDone{
+		Task: task,
+		Done: done,
+	}
+
+	err := m.AssignTask(workerId, twd)
+
+	return done, err
 }

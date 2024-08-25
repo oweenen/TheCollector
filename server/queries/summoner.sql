@@ -1,5 +1,15 @@
 -- name: GetSummonerByPuuid :one
-SELECT * FROM tft_summoner WHERE puuid = $1;
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp
+FROM tft_summoner WHERE puuid = $1;
+
+-- name: SummonerExistsByNameTag :one
+SELECT EXISTS (
+    SELECT * FROM tft_summoner WHERE name = @name::VARCHAR AND tag = @tag::VARCHAR
+);
+
+-- name: GetSummonerByNameTag :one
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp
+FROM tft_summoner WHERE name = @name::VARCHAR AND tag = @tag::VARCHAR;
 
 -- name: InsertPuuid :exec
 INSERT INTO tft_summoner (
@@ -7,6 +17,15 @@ INSERT INTO tft_summoner (
 ) VALUES (
     $1
 ) ON CONFLICT (puuid) DO NOTHING;
+
+-- name: InsertAccount :exec
+INSERT INTO tft_summoner (
+    puuid,
+    name,
+    tag
+) VALUES (
+    $1, @name::VARCHAR, @tag::VARCHAR
+);
 
 -- name: UpdateSummoner :exec
 UPDATE tft_summoner

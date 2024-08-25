@@ -7,15 +7,33 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getSummonerByPuuid = `-- name: GetSummonerByPuuid :one
-SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp, skip_account FROM tft_summoner WHERE puuid = $1
+const getSummonerByNameTag = `-- name: GetSummonerByNameTag :one
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp
+FROM tft_summoner WHERE name = $1::VARCHAR AND tag = $2::VARCHAR
 `
 
-func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (TftSummoner, error) {
-	row := q.db.QueryRow(ctx, getSummonerByPuuid, puuid)
-	var i TftSummoner
+type GetSummonerByNameTagParams struct {
+	Name string `json:"name"`
+	Tag  string `json:"tag"`
+}
+
+type GetSummonerByNameTagRow struct {
+	Puuid               string           `json:"puuid"`
+	Name                pgtype.Text      `json:"name"`
+	Tag                 pgtype.Text      `json:"tag"`
+	SummonerID          pgtype.Text      `json:"summonerId"`
+	ProfileIconID       pgtype.Int4      `json:"profileIconId"`
+	SummonerLevel       pgtype.Int4      `json:"summonerLevel"`
+	FullUpdateTimestamp pgtype.Timestamp `json:"fullUpdateTimestamp"`
+}
+
+func (q *Queries) GetSummonerByNameTag(ctx context.Context, arg GetSummonerByNameTagParams) (GetSummonerByNameTagRow, error) {
+	row := q.db.QueryRow(ctx, getSummonerByNameTag, arg.Name, arg.Tag)
+	var i GetSummonerByNameTagRow
 	err := row.Scan(
 		&i.Puuid,
 		&i.Name,
@@ -24,10 +42,59 @@ func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (TftSumm
 		&i.ProfileIconID,
 		&i.SummonerLevel,
 		&i.FullUpdateTimestamp,
-		&i.BackgroundUpdateTimestamp,
-		&i.SkipAccount,
 	)
 	return i, err
+}
+
+const getSummonerByPuuid = `-- name: GetSummonerByPuuid :one
+SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp
+FROM tft_summoner WHERE puuid = $1
+`
+
+type GetSummonerByPuuidRow struct {
+	Puuid               string           `json:"puuid"`
+	Name                pgtype.Text      `json:"name"`
+	Tag                 pgtype.Text      `json:"tag"`
+	SummonerID          pgtype.Text      `json:"summonerId"`
+	ProfileIconID       pgtype.Int4      `json:"profileIconId"`
+	SummonerLevel       pgtype.Int4      `json:"summonerLevel"`
+	FullUpdateTimestamp pgtype.Timestamp `json:"fullUpdateTimestamp"`
+}
+
+func (q *Queries) GetSummonerByPuuid(ctx context.Context, puuid string) (GetSummonerByPuuidRow, error) {
+	row := q.db.QueryRow(ctx, getSummonerByPuuid, puuid)
+	var i GetSummonerByPuuidRow
+	err := row.Scan(
+		&i.Puuid,
+		&i.Name,
+		&i.Tag,
+		&i.SummonerID,
+		&i.ProfileIconID,
+		&i.SummonerLevel,
+		&i.FullUpdateTimestamp,
+	)
+	return i, err
+}
+
+const insertAccount = `-- name: InsertAccount :exec
+INSERT INTO tft_summoner (
+    puuid,
+    name,
+    tag
+) VALUES (
+    $1, $2::VARCHAR, $3::VARCHAR
+)
+`
+
+type InsertAccountParams struct {
+	Puuid string `json:"puuid"`
+	Name  string `json:"name"`
+	Tag   string `json:"tag"`
+}
+
+func (q *Queries) InsertAccount(ctx context.Context, arg InsertAccountParams) error {
+	_, err := q.db.Exec(ctx, insertAccount, arg.Puuid, arg.Name, arg.Tag)
+	return err
 }
 
 const insertPuuid = `-- name: InsertPuuid :exec
@@ -41,6 +108,24 @@ INSERT INTO tft_summoner (
 func (q *Queries) InsertPuuid(ctx context.Context, puuid string) error {
 	_, err := q.db.Exec(ctx, insertPuuid, puuid)
 	return err
+}
+
+const summonerExistsByNameTag = `-- name: SummonerExistsByNameTag :one
+SELECT EXISTS (
+    SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp, skip_account FROM tft_summoner WHERE name = $1::VARCHAR AND tag = $2::VARCHAR
+)
+`
+
+type SummonerExistsByNameTagParams struct {
+	Name string `json:"name"`
+	Tag  string `json:"tag"`
+}
+
+func (q *Queries) SummonerExistsByNameTag(ctx context.Context, arg SummonerExistsByNameTagParams) (bool, error) {
+	row := q.db.QueryRow(ctx, summonerExistsByNameTag, arg.Name, arg.Tag)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const updateAccount = `-- name: UpdateAccount :exec
