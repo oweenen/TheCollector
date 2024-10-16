@@ -16,13 +16,14 @@ type TftComp struct {
 }
 
 type TftMatch struct {
-	ID          string `json:"id"`
-	DataVersion string `json:"dataVersion"`
-	GameVersion string `json:"gameVersion"`
-	QueueID     int32  `json:"queueId"`
-	GameType    string `json:"gameType"`
-	SetName     string `json:"setName"`
-	SetNumber   int32  `json:"setNumber"`
+	ID          string           `json:"id"`
+	DataVersion string           `json:"dataVersion"`
+	GameVersion string           `json:"gameVersion"`
+	QueueID     int32            `json:"queueId"`
+	GameType    string           `json:"gameType"`
+	SetName     string           `json:"setName"`
+	SetNumber   int32            `json:"setNumber"`
+	MatchDate   pgtype.Timestamp `json:"matchDate"`
 }
 
 type TftSummoner struct {

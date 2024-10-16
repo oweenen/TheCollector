@@ -5,7 +5,8 @@ CREATE TABLE tft_match (
 	queue_id INT NOT NULL,
 	game_type VARCHAR NOT NULL,
 	set_name VARCHAR NOT NULL,
-	set_number INT NOT NULL
+	set_number INT NOT NULL,
+	match_date TIMESTAMP NOT NULL
 );
 
 CREATE TABLE tft_summoner (

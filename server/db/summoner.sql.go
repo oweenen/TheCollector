@@ -13,7 +13,7 @@ import (
 
 const getSummonerByNameTag = `-- name: GetSummonerByNameTag :one
 SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp
-FROM tft_summoner WHERE name = $1::VARCHAR AND tag = $2::VARCHAR
+FROM tft_summoner WHERE name iLIKE $1::VARCHAR AND tag iLIkE $2::VARCHAR
 `
 
 type GetSummonerByNameTagParams struct {
@@ -112,7 +112,7 @@ func (q *Queries) InsertPuuid(ctx context.Context, puuid string) error {
 
 const summonerExistsByNameTag = `-- name: SummonerExistsByNameTag :one
 SELECT EXISTS (
-    SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp, skip_account FROM tft_summoner WHERE name = $1::VARCHAR AND tag = $2::VARCHAR
+    SELECT puuid, name, tag, summoner_id, profile_icon_id, summoner_level, full_update_timestamp, background_update_timestamp, skip_account FROM tft_summoner WHERE name iLIKE $1::VARCHAR AND tag iLIKE $2::VARCHAR
 )
 `
 

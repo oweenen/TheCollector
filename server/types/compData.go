@@ -20,8 +20,8 @@ type CompData struct {
 		Name       string `json:"name"`
 		NumUnits   int32  `json:"numUnits"`
 		Style      int32  `json:"style"`
-		TierActive int32  `json:"tierRurrent"`
-		TierMax    int32  `json:"tierTotal"`
+		TierActive int32  `json:"tierCurrent"`
+		TierMax    int32  `json:"tierMax"`
 	} `json:"traits"`
 	Units []struct {
 		CharacterId string   `json:"characterId"`

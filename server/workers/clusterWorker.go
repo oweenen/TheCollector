@@ -55,7 +55,6 @@ func spawnMatchHistoryTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan 
 		case queue <- tasks.MatchHistoryTask{
 			Cluster:      "americas",
 			Puuid:        row.Puuid,
-			Queue:        queue,
 			Pool:         pool,
 			Queries:      queries,
 			MatchesAfter: time.Now().Add(-time.Hour * 24 * 3),

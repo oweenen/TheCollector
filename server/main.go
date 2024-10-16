@@ -44,6 +44,7 @@ func main() {
 	apiEnv := api.ApiEnv{
 		WorkerManager: workerManager,
 		Queries:       queries,
+		Pool:          pool,
 	}
 	http.ListenAndServe(":8080", apiEnv.New())
 }

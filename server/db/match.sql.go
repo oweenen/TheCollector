@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"TheCollectorDG/types"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createComp = `-- name: CreateComp :exec
@@ -40,20 +41,22 @@ INSERT INTO tft_match (
 	queue_id,
 	game_type,
 	set_name,
-	set_number
+	set_number,
+	match_date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 `
 
 type CreateMatchParams struct {
-	ID          string `json:"id"`
-	DataVersion string `json:"dataVersion"`
-	GameVersion string `json:"gameVersion"`
-	QueueID     int32  `json:"queueId"`
-	GameType    string `json:"gameType"`
-	SetName     string `json:"setName"`
-	SetNumber   int32  `json:"setNumber"`
+	ID          string           `json:"id"`
+	DataVersion string           `json:"dataVersion"`
+	GameVersion string           `json:"gameVersion"`
+	QueueID     int32            `json:"queueId"`
+	GameType    string           `json:"gameType"`
+	SetName     string           `json:"setName"`
+	SetNumber   int32            `json:"setNumber"`
+	MatchDate   pgtype.Timestamp `json:"matchDate"`
 }
 
 func (q *Queries) CreateMatch(ctx context.Context, arg CreateMatchParams) error {
@@ -65,13 +68,14 @@ func (q *Queries) CreateMatch(ctx context.Context, arg CreateMatchParams) error 
 		arg.GameType,
 		arg.SetName,
 		arg.SetNumber,
+		arg.MatchDate,
 	)
 	return err
 }
 
 const matchExists = `-- name: MatchExists :one
 SELECT EXISTS (
-    SELECT id, data_version, game_version, queue_id, game_type, set_name, set_number FROM tft_match WHERE id = $1
+    SELECT id, data_version, game_version, queue_id, game_type, set_name, set_number, match_date FROM tft_match WHERE id = $1
 )
 `
 
@@ -80,4 +84,68 @@ func (q *Queries) MatchExists(ctx context.Context, id string) (bool, error) {
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const summonerMatchHistory = `-- name: SummonerMatchHistory :many
+SELECT
+	match_id,
+	comp_data,
+	game_version,
+	queue_id,
+	game_type,
+	set_number,
+	match_date
+FROM
+	tft_comp
+	JOIN tft_match ON tft_comp.match_id = tft_match.id
+WHERE
+	tft_comp.summoner_puuid = $1
+ORDER BY
+	tft_match.match_date
+LIMIT $2
+OFFSET $3
+`
+
+type SummonerMatchHistoryParams struct {
+	SummonerPuuid string `json:"summonerPuuid"`
+	Limit         int32  `json:"limit"`
+	Offset        int32  `json:"offset"`
+}
+
+type SummonerMatchHistoryRow struct {
+	MatchID     string           `json:"matchId"`
+	CompData    types.CompData   `json:"compData"`
+	GameVersion string           `json:"gameVersion"`
+	QueueID     int32            `json:"queueId"`
+	GameType    string           `json:"gameType"`
+	SetNumber   int32            `json:"setNumber"`
+	MatchDate   pgtype.Timestamp `json:"matchDate"`
+}
+
+func (q *Queries) SummonerMatchHistory(ctx context.Context, arg SummonerMatchHistoryParams) ([]SummonerMatchHistoryRow, error) {
+	rows, err := q.db.Query(ctx, summonerMatchHistory, arg.SummonerPuuid, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SummonerMatchHistoryRow
+	for rows.Next() {
+		var i SummonerMatchHistoryRow
+		if err := rows.Scan(
+			&i.MatchID,
+			&i.CompData,
+			&i.GameVersion,
+			&i.QueueID,
+			&i.GameType,
+			&i.SetNumber,
+			&i.MatchDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

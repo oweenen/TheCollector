@@ -8,8 +8,6 @@ import (
 	"context"
 	"log"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (env WorkerEnv) RegionWorker(prioQueue chan workerManager.Task) {
@@ -39,13 +37,13 @@ func (env WorkerEnv) RegionWorker(prioQueue chan workerManager.Task) {
 
 		select {
 		case <-backoffTicker.C:
-			spawnSummonerDetailsTasks(env.Pool, env.Queries, queue)
+			spawnSummonerDetailsTasks(env.Queries, queue)
 		default:
 		}
 	}
 }
 
-func spawnSummonerDetailsTasks(pool *pgxpool.Pool, queries *db.Queries, queue chan workerManager.Task) int {
+func spawnSummonerDetailsTasks(queries *db.Queries, queue chan workerManager.Task) int {
 	puuids, _ := queries.GetPuuidsWithNullSummonerData(context.Background(), 100)
 	for i, puuid := range puuids {
 		select {
