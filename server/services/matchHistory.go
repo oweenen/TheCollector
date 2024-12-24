@@ -1,60 +1,54 @@
-package tasks
+package services
 
 import (
 	"TheCollectorDG/db"
 	"TheCollectorDG/riot"
 	"TheCollectorDG/types"
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type MatchHistoryTask struct {
-	Cluster      string
-	Puuid        string
-	MatchesAfter time.Time
-	Pool         *pgxpool.Pool
-	Queries      *db.Queries
+func (env ServiceEnv) GetMatchHistory(ctx context.Context, puuid string) ([]db.SummonerMatchHistoryRow, error) {
+	return env.Queries.SummonerMatchHistory(context.Background(), db.SummonerMatchHistoryParams{
+		SummonerPuuid: puuid,
+		Limit:         20,
+		Offset:        0,
+	})
 }
 
-func (task MatchHistoryTask) Id() string {
-	return fmt.Sprintf("MatchHistoryTask-%v", task.Puuid)
-}
-
-func (task MatchHistoryTask) Exec(ctx context.Context) error {
+func (env ServiceEnv) CollectMatchHistory(ctx context.Context, cluster, puuid string, matchesAfter time.Time) error {
 	updatedAt := time.Now()
 
-	res, err := riot.GetMatchHistory(task.Cluster, task.Puuid, task.MatchesAfter)
+	res, err := riot.GetMatchHistory(cluster, puuid, matchesAfter)
 	if err != nil {
 		return err
 	}
 
-	task.Queries.SetBackgroundUpdateTimestamp(ctx, db.SetBackgroundUpdateTimestampParams{
-		Puuid: task.Puuid,
+	env.Queries.SetBackgroundUpdateTimestamp(ctx, db.SetBackgroundUpdateTimestampParams{
+		Puuid: puuid,
 		BackgroundUpdateTimestamp: pgtype.Timestamp{
 			Time:  updatedAt,
 			Valid: true,
 		},
 	})
 
-	log.Printf("Got %v matchIds from summoner %v\n", len(res), task.Puuid)
+	log.Printf("Got %v matchIds from summoner %v\n", len(res), puuid)
 
 	for _, matchId := range res {
-		if exists, _ := task.Queries.MatchExists(ctx, matchId); exists {
+		if exists, _ := env.Queries.MatchExists(ctx, matchId); exists {
 			log.Printf("Skipping match %v...\n", matchId)
 			return nil
 		}
 
-		res, err := riot.GetMatchDetails(task.Cluster, matchId)
+		res, err := riot.GetMatchDetails(cluster, matchId)
 		if err != nil {
 			return err
 		}
 
-		err = storeMatchDetails(ctx, task.Pool, task.Queries, res)
+		err = env.storeMatchDetails(ctx, res)
 
 		log.Printf("Stored match %v!\n", matchId)
 	}
@@ -62,24 +56,24 @@ func (task MatchHistoryTask) Exec(ctx context.Context) error {
 	return err
 }
 
-func storeMatchDetails(ctx context.Context, pool *pgxpool.Pool, queries *db.Queries, matchDetails *riot.Match) error {
+func (env ServiceEnv) storeMatchDetails(ctx context.Context, matchDetails *riot.Match) error {
 	var err error
 
 	// insert participants
 	for _, puuid := range matchDetails.MetaData.Participants {
-		err = queries.InsertPuuid(ctx, puuid)
+		err = env.Queries.InsertPuuid(ctx, puuid)
 		if err != nil {
 			return err
 		}
 	}
 
-	tx, err := pool.Begin(ctx)
+	tx, err := env.Pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	qtx := queries.WithTx(tx)
+	qtx := env.Queries.WithTx(tx)
 
 	// create match
 	err = qtx.CreateMatch(ctx, db.CreateMatchParams{

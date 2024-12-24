@@ -3,8 +3,7 @@ package main
 import (
 	"TheCollectorDG/api"
 	"TheCollectorDG/db"
-	"TheCollectorDG/workerManager"
-	"TheCollectorDG/workers"
+	"TheCollectorDG/services"
 	"net/http"
 
 	"context"
@@ -32,19 +31,16 @@ func main() {
 
 	queries := db.New(pool)
 
-	workerEnv := workers.WorkerEnv{
+	serviceEnv := services.ServiceEnv{
 		Pool:    pool,
 		Queries: queries,
 	}
 
-	workerManager := workerManager.New()
-	workerManager.AddWorker("na1", workerEnv.RegionWorker)
-	workerManager.AddWorker("americas", workerEnv.ClusterWorker)
+	go serviceEnv.ClusterCollectionLoop(context.Background(), "americas")
+	go serviceEnv.RegionCollectionLoop(context.Background(), "na1")
 
 	apiEnv := api.ApiEnv{
-		WorkerManager: workerManager,
-		Queries:       queries,
-		Pool:          pool,
+		ServiceEnv: serviceEnv,
 	}
 	http.ListenAndServe(":8080", apiEnv.New())
 }

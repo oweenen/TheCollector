@@ -24,7 +24,6 @@ type Match struct {
 }
 
 type Comp struct {
-	Augments  []string `json:"augments"`
 	Companion struct {
 		ContentId string `json:"content_ID"`
 		ItemId    int32  `json:"item_ID"`

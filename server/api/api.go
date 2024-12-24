@@ -2,35 +2,30 @@ package api
 
 import (
 	"TheCollectorDG/db"
-	"TheCollectorDG/workerManager"
-	"TheCollectorDG/workers/tasks"
+	"TheCollectorDG/services"
 	"context"
 	"encoding/json"
 	"net/http"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ApiEnv struct {
-	Queries       *db.Queries
-	Pool          *pgxpool.Pool
-	WorkerManager *workerManager.Manager
+	ServiceEnv services.ServiceEnv
 }
 
 func (env ApiEnv) New() *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/summoner/{puuid}", env.getSummonerByPuuid)
-	router.HandleFunc("/account/{name}/{tag}", env.getSummonerByNameTag)
+	router.HandleFunc("/account/{cluster}/{name}/{tag}", env.getOrCollectSummonerByNameTag)
 	router.HandleFunc("/summoner/{puuid}/matches", env.getSummonerMatches)
-	router.HandleFunc("/summoner/{puuid}/refresh", env.refreshSummoner)
 	return router
 }
 
 func (env ApiEnv) getSummonerByPuuid(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	puuid := r.PathValue("puuid")
+	ctx := context.Background()
 
-	summoner, err := env.Queries.GetSummonerByPuuid(context.Background(), puuid)
+	summoner, err := env.ServiceEnv.GetSummonerByPuuid(ctx, puuid)
 	if err != nil {
 		http.Error(w, "summoner not found", 404)
 		return
@@ -40,41 +35,15 @@ func (env ApiEnv) getSummonerByPuuid(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-func (env ApiEnv) getSummonerByNameTag(w http.ResponseWriter, r *http.Request) {
+func (env ApiEnv) getOrCollectSummonerByNameTag(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	ctx := context.Background()
+	cluster := r.PathValue("cluster")
 	name := r.PathValue("name")
 	tag := r.PathValue("tag")
 
-	exists, err := env.Queries.SummonerExistsByNameTag(ctx, db.SummonerExistsByNameTagParams{
-		Name: name,
-		Tag:  tag,
-	})
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	if !exists {
-		done, err := env.WorkerManager.AssignTaskWithDone("americas", tasks.AccountByNameTagTask{
-			Name:    name,
-			Tag:     tag,
-			Cluster: "americas",
-			Queries: env.Queries,
-		})
-		if err != nil {
-			w.WriteHeader(500)
-			return
-		}
-
-		<-done
-	}
-
-	summoner, err := env.Queries.GetSummonerByNameTag(ctx, db.GetSummonerByNameTagParams{
-		Name: name,
-		Tag:  tag,
-	})
+	summoner, err := env.ServiceEnv.GetOrCollectSummonerByNameTag(ctx, cluster, name, tag)
 	if err != nil {
 		w.WriteHeader(404)
 		return
@@ -86,13 +55,11 @@ func (env ApiEnv) getSummonerByNameTag(w http.ResponseWriter, r *http.Request) {
 
 func (env ApiEnv) getSummonerMatches(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	ctx := context.Background()
 	puuid := r.PathValue("puuid")
 
-	matches, err := env.Queries.SummonerMatchHistory(context.Background(), db.SummonerMatchHistoryParams{
-		SummonerPuuid: puuid,
-		Limit:         20,
-		Offset:        0,
-	})
+	matches, err := env.ServiceEnv.GetMatchHistory(ctx, puuid)
 	if err != nil {
 		http.Error(w, "summoner not found", 404)
 		return
@@ -105,28 +72,4 @@ func (env ApiEnv) getSummonerMatches(w http.ResponseWriter, r *http.Request) {
 
 	bytes, _ := json.Marshal(matches)
 	w.Write(bytes)
-}
-
-func (env ApiEnv) refreshSummoner(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	puuid := r.PathValue("puuid")
-
-	env.WorkerManager.AssignTask("na1", tasks.SummonerDetailsTask{
-		Puuid:   puuid,
-		Region:  "na1",
-		Queries: env.Queries,
-	})
-
-	env.WorkerManager.AssignTask("americas", tasks.AccountByPuuidTask{
-		Puuid:   puuid,
-		Cluster: "americas",
-		Queries: env.Queries,
-	})
-
-	env.WorkerManager.AssignTask("americas", tasks.MatchHistoryTask{
-		Puuid:   puuid,
-		Pool:    env.Pool,
-		Cluster: "americas",
-		Queries: env.Queries,
-	})
 }

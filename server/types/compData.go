@@ -1,7 +1,6 @@
 package types
 
 type CompData struct {
-	Augments  []string `json:"augments"`
 	Companion struct {
 		ContentId string `json:"contentId"`
 		ItemId    int32  `json:"itemId"`
